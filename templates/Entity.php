@@ -88,7 +88,7 @@ class <?= $name ?> {
     return $this-><?= $def['mapped'] ?>;
   }
   
-  protected function set<?= $def['inflected'] ?>(<?= $def['type'] ?> $<?= $def['mapped'] ?>) {
+  protected function set<?= $def['inflected'] ?>(<?= defToParam($def) ?>) {
     $this-><?= $def['mapped'] ?> = <?= $def['mapped'] ?>;
   }
 <?php endforeach; ?>

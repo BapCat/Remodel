@@ -16,10 +16,12 @@ class EntityDefinition {
   private $values = [];
   
   public function __construct($name, $table) {
+    $split = explode('\\', $name);
+    
     $this->inflector = Inflector::get();
     $this->fullname = $name;
-    $this->name = basename($name);
-    $this->namespace = dirname($name);
+    $this->name = array_pop($split);
+    $this->namespace = implode('\\', $split);
     $this->table = $table;
   }
   
