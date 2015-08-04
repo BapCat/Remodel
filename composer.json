@@ -1,0 +1,29 @@
+{
+  "name": "bapcat/remodel",
+  "description": "",
+  "license": "GPLv3",
+  "homepage": "http://github.com/BapCat/Remodel",
+  "keywords": [],
+  "minimum-stability": "dev",
+  "authors": [
+    {
+      "name": "Corey Frenette",
+      "email": "corey@narwhunderful.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0",
+    "bapcat/tailor": "dev-master",
+    "bapcat/propifier": "dev-master",
+    "icanboogie/inflector": "dev-master"
+  },
+  "require-dev": {
+    "bapcat/values": "dev-master",
+    "satooshi/php-coveralls": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "BapCat\\Remodel\\": "src/"
+    }
+  }
+}
