@@ -6,7 +6,7 @@ use BapCat\Propifier\PropifierTrait;
 use <?= $dependency ?>;
 <?php endforeach; ?>
 
-class <?= $class_name ?> {
+class <?= $name ?> {
   use PropifierTrait;
   
   public static $DEFINITION = [

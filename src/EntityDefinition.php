@@ -8,11 +8,15 @@ class EntityDefinition {
   
   private $inflector;
   
+  private $name;
+  private $table;
   private $id;
   private $values = [];
   
-  public function __construct($id_raw_name, $id_mapped_name, $id_type) {
+  public function __construct($name, $table, $id_raw_name, $id_mapped_name, $id_type) {
     $this->inflector = Inflector::get();
+    $this->name = $name;
+    $this->table = $table;
     $this->id = ['raw' => $id_raw_name, 'mapped' => $id_mapped_name, 'inflected' => $this->inflector->camelize($id_mapped_name), 'type' => $id_type];
   }
   
@@ -27,6 +31,14 @@ class EntityDefinition {
   
   public function optional($raw_name, $mapped_name, $type) {
     return $this->add($raw_name, $mapped_name, $type, false);
+  }
+  
+  protected function getName() {
+    return $this->name;
+  }
+  
+  protected function getTable() {
+    return $this->table;
   }
   
   protected function getId() {
