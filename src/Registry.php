@@ -9,7 +9,7 @@ class Registry {
     $this->tailor = $tailor;
   }
   
-  public function register($class_name, EntityBuilder $builder) {
+  public function register($class_name, EntityDefinition $builder) {
     $dependencies = [];
     $required = [];
     $optional = [];

@@ -3,7 +3,7 @@
 use BapCat\Propifier\PropifierTrait;
 use ICanBoogie\Inflector;
 
-class EntityBuilder {
+class EntityDefinition {
   use PropifierTrait;
   
   private $inflector;

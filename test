@@ -42,14 +42,14 @@ class CoolIdentifier extends Identifier {
 }
 
 use BapCat\Remodel\Registry;
-use BapCat\Remodel\EntityBuilder;
+use BapCat\Remodel\EntityDefinition;
 use BapCat\CoolThing\User;
 
 $registry = new Registry($tailor);
 
 $registry->register(
   User::class,
-  (new EntityBuilder('id', 'id', CoolIdentifier::class))
+  (new EntityDefinition('id', 'id', CoolIdentifier::class))
     ->required('email', 'email', Email::class)
 );
 
