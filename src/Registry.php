@@ -10,17 +10,10 @@ class Registry {
   }
   
   public function register(EntityDefinition $builder) {
-    $dependencies = [];
     $required = [];
     $optional = [];
     
     foreach($builder->values as $value) {
-      if(!in_array($value['type'], $dependencies)) {
-        $dependencies[] = $value['type'];
-      }
-      
-      $value['type'] = basename($value['type']);
-      
       if($value['req']) {
         $required[] = $value;
       } else {
@@ -28,12 +21,11 @@ class Registry {
       }
     }
     
-    $this->tailor->bind($class_name, 'Entity', [
-      'namespace'    => dirname($builder->name),
-      'name'         => basename($builder->name),
-      'table'        => $table,
-      'id'           => $builder->id,
-      'dependencies' => $dependencies,
+    $this->tailor->bind($builder->fullname, 'Entity', [
+      'namespace'    => $builder->namespace,
+      'name'         => $builder->name,
+      'table'        => $builder->table,
+      'ids'          => $builder->ids,
       'required'     => $required,
       'optional'     => $optional
     ]);

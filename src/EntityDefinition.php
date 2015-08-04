@@ -8,20 +8,28 @@ class EntityDefinition {
   
   private $inflector;
   
+  private $fullname;
   private $name;
+  private $namespace;
   private $table;
-  private $id;
+  private $ids = [];
   private $values = [];
   
-  public function __construct($name, $table, $id_raw_name, $id_mapped_name, $id_type) {
+  public function __construct($name, $table) {
     $this->inflector = Inflector::get();
-    $this->name = $name;
+    $this->fullname = $name;
+    $this->name = basename($name);
+    $this->namespace = dirname($name);
     $this->table = $table;
-    $this->id = ['raw' => $id_raw_name, 'mapped' => $id_mapped_name, 'inflected' => $this->inflector->camelize($id_mapped_name), 'type' => $id_type];
   }
   
   private function add($raw_name, $mapped_name, $type, $required) {
     $this->values[] = ['raw' => $raw_name, 'mapped' => $mapped_name, 'inflected' => $this->inflector->camelize($mapped_name), 'type' => $type, 'req' => $required];
+    return $this;
+  }
+  
+  public function id($raw_name, $mapped_name, $type) {
+    $this->ids[] = ['raw' => $raw_name, 'mapped' => $mapped_name, 'inflected' => $this->inflector->camelize($mapped_name), 'type' => $type];
     return $this;
   }
   
@@ -33,16 +41,28 @@ class EntityDefinition {
     return $this->add($raw_name, $mapped_name, $type, false);
   }
   
+  protected function getFullname() {
+    return $this->fullname;
+  }
+  
   protected function getName() {
     return $this->name;
+  }
+  
+  protected function getNamespace() {
+    return $this->namespace;
   }
   
   protected function getTable() {
     return $this->table;
   }
   
-  protected function getId() {
-    return $this->id;
+  protected function getId($index) {
+    return $this->ids[$index];
+  }
+  
+  protected function getIds() {
+    return $this->ids;
   }
   
   protected function getValue($index) {

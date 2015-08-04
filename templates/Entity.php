@@ -1,51 +1,87 @@
 <<?= '?php' ?> namespace <?= $namespace ?>;
 
-use BapCat\Propifier\PropifierTrait;
+<?php
 
-<?php foreach($dependencies as $dependency): ?>
-use <?= $dependency ?>;
-<?php endforeach; ?>
+function defToParam(array $def, $nullable = false) {
+  return "\\{$def['type']} \${$def['mapped']}" . ($nullable ? ' = null' : '');
+}
+
+function defsToParams(array $defs, $nullable = false) {
+  $params = '';
+  
+  foreach($defs as $i => $def) {
+    $params .= defToParam($def, $nullable);
+    
+    if($i < count($defs) - 1) {
+      $params .= ', ';
+    }
+  }
+  
+  return $params;
+}
+
+function defToArg(array $def) {
+  return "\${$def['mapped']}";
+}
+
+function defsToArgs(array $defs) {
+  $args = '';
+  
+  foreach($defs as $i => $def) {
+    $args .= defToArg($def);
+    
+    if($i < count($defs) - 1) {
+      $args .= ', ';
+    }
+  }
+  
+  return $args;
+}
+
+?>
+
+use BapCat\Propifier\PropifierTrait;
 
 class <?= $name ?> {
   use PropifierTrait;
   
   public static $DEFINITION = [
 <?php foreach($required as $def): ?>
-    '<?= $def['mapped'] ?>' => ['required' => true, 'type' => '<?= $def['type'] ?>'],
+    '<?= $def['mapped'] ?>' => ['required' => true, 'type' => \<?= $def['type'] ?>::class],
 <?php endforeach; ?>
 <?php foreach($optional as $def): ?>
-    <?= $def['mapped'] ?> => ['required' => false, 'type' => '<?= $def['type'] ?>'],
+    <?= $def['mapped'] ?> => ['required' => false, 'type' => \<?= $def['type'] ?>::class],
 <?php endforeach; ?>
   ];
   
-  private $<?= $id['mapped'] ?>;
-<?php foreach($required as $def): ?>
+<?php foreach(array_merge($ids, $required, $optional) as $def): ?>
   private $<?= $def['mapped'] ?>;
 <?php endforeach; ?>
   
   private function __construct() { }
   
-  public static function create(<?php foreach($required as $i => $def): ?><?= $def['type'] ?> $<?= $def['mapped'] ?><?php if($i == count($required)): ?><?= ',' ?><?php endif; ?><?php endforeach; ?>) {
-    return self::make(null, <?php foreach($required as $i => $def): ?>$<?= $def['mapped'] ?><?php if($i == count($required)): ?><?= ', ' ?><?php endif; ?><?php endforeach; ?>);
+  public static function create(<?= defsToParams($required) ?>) {
+    return self::make(null, <?= defsToArgs($required) ?>);
   }
   
-  public static function from(<?= $id['type'] ?> $<?= $id['mapped'] ?><?php foreach($required as $def): ?>, <?= $def['type'] ?> $<?= $def['mapped'] ?><?php endforeach; ?>) {
-    return self::make($<?= $id['mapped'] ?><?php foreach($required as $def): ?>, $<?= $def['mapped'] ?><?php endforeach; ?>);
+  public static function from(<?= defsToParams(array_merge($ids, $required)) ?>) {
+    return self::make(<?= defsToArgs(array_merge($ids, $required)) ?>);
   }
   
-  private static function make(<?= $id['type'] ?> $<?= $id['mapped'] ?> = null<?php foreach($required as $def): ?>, <?= $def['type'] ?> $<?= $def['mapped'] ?> = null<?php endforeach; ?><?php foreach($optional as $def): ?>, <?= $def['type'] ?> $<?= $def['mapped'] ?> = null<?php endforeach; ?>) {
+  private static function make(<?= defsToParams(array_merge($ids, $required, $optional), true) ?>) {
     $entity = new User();
-    $entity-><?= $id['mapped'] ?> = $<?= $id['mapped'] ?>;
-<?php foreach($required as $def): ?>
+<?php foreach(array_merge($ids, $required, $optional) as $def): ?>
     $entity-><?= $def['mapped'] ?> = $<?= $def['mapped'] ?>;
 <?php endforeach; ?>
     
     return $entity;
   }
   
+<?php foreach($ids as $id): ?>
   protected function get<?= $id['inflected'] ?>() {
     return $this-><?= $id['mapped'] ?>;
   }
+<?php endforeach; ?>
   
 <?php foreach(array_merge($required, $optional) as $def): ?>
   protected function get<?= $def['inflected'] ?>() {

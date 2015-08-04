@@ -29,16 +29,16 @@ use BapCat\Values\Identifier;
 use BapCat\Values\Email;
 
 class CoolIdentifier extends Identifier {
-    public function __construct($id) {
-        $this->validate($id);
-        parent::__construct($id);
+  public function __construct($id) {
+    $this->validate($id);
+    parent::__construct($id);
+  }
+  
+  private function validate($id) {
+    if(filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
+      throw new InvalidArgumentException("Expected a valid ID, but got [$id] instead");
     }
-    
-    private function validate($id) {
-        if(filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
-            throw new InvalidArgumentException("Expected a valid ID, but got [$id] instead");
-        }
-    }
+  }
 }
 
 use BapCat\Remodel\Registry;
@@ -47,11 +47,12 @@ use BapCat\CoolThing\User;
 
 $registry = new Registry($tailor);
 
-$registry->register(
-  User::class,
-  (new EntityDefinition('id', 'id', CoolIdentifier::class))
-    ->required('email', 'email', Email::class)
-);
+$def = (new EntityDefinition(User::class, 'users'))
+  ->id('id', 'id', CoolIdentifier::class)
+  ->required('email', 'email', Email::class)
+;
+
+$registry->register($def);
 
 $user = User::create(new Email('corey@narwhunderful.com'));
 var_dump($user);
