@@ -40,17 +40,15 @@ function defsToArgs(array $defs) {
 
 ?>
 
-use BapCat\Propifier\PropifierTrait;
-
 class <?= $name ?> {
-  use PropifierTrait;
+  use \BapCat\Propifier\PropifierTrait;
   
   public static $DEFINITION = [
 <?php foreach($required as $def): ?>
     '<?= $def['mapped'] ?>' => ['required' => true, 'type' => \<?= $def['type'] ?>::class],
 <?php endforeach; ?>
 <?php foreach($optional as $def): ?>
-    <?= $def['mapped'] ?> => ['required' => false, 'type' => \<?= $def['type'] ?>::class],
+    '<?= $def['mapped'] ?>' => ['required' => false, 'type' => \<?= $def['type'] ?>::class],
 <?php endforeach; ?>
   ];
   

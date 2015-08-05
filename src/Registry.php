@@ -21,13 +21,17 @@ class Registry {
       }
     }
     
-    $this->tailor->bind($builder->fullname, 'Entity', [
+    $options = [
       'namespace'    => $builder->namespace,
       'name'         => $builder->name,
       'table'        => $builder->table,
       'ids'          => $builder->ids,
       'required'     => $required,
-      'optional'     => $optional
-    ]);
+      'optional'     => $optional,
+      'virtual'      => $builder->virtuals
+    ];
+    
+    $this->tailor->bind($builder->fullname, 'Entity', $options);
+    $this->tailor->bind($builder->fullname . 'Gateway', 'Gateway', $options);
   }
 }

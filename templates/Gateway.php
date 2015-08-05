@@ -4,17 +4,15 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class <?= $name ?>Gateway {
   protected static $MAPPINGS = [
-    'id'         => 'User_ID',
-    'password'   => 'User_Password',
-    'is_admin'   => 'IsActive',
-    'email'      => 'Email',
-    'first_name' => 'First_Name',
-    'last_name'  => 'Last_Name'
+<?php foreach(array_merge($ids, $required, $optional) as $def): ?>
+    '<?= $def['mapped'] ?>' => '<?= $def['raw'] ?>',
+<?php endforeach; ?>
   ];
   
   protected static $VIRTUAL = [
-    'full_email' => ['First_Name', "' '", 'Last_Name', "' <'", 'Email', "'>'"],
-    'full_name'  => ['First_Name', "' '", 'Last_Name']
+<?php foreach($virtual as $def): ?>
+    '<?= $def['mapped'] ?>' => <?= var_export($def['raw'], true) ?>,
+<?php endforeach; ?>
   ];
   
   public function query() {

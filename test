@@ -27,6 +27,7 @@ $tailor = new Tailor($finder, $compiler);
 
 use BapCat\Values\Identifier;
 use BapCat\Values\Email;
+use BapCat\Values\Text;
 
 class CoolIdentifier extends Identifier {
   public function __construct($id) {
@@ -44,15 +45,23 @@ class CoolIdentifier extends Identifier {
 use BapCat\Remodel\Registry;
 use BapCat\Remodel\EntityDefinition;
 use BapCat\CoolThing\User;
+use BapCat\CoolThing\UserGateway;
 
 $registry = new Registry($tailor);
 
 $def = (new EntityDefinition(User::class, 'users'))
   ->id('id', 'id', CoolIdentifier::class)
   ->required('email', 'email', Email::class)
+  ->optional('first_name', 'first_name', Text::class)
+  ->optional('last_name', 'last_name', Text::class)
+  ->virtual('full_email', ['First_Name', "' '", 'Last_Name', "' <'", 'Email', "'>'"], Text::class)
+  ->virtual('full_name', ['First_Name', "' '", 'Last_Name'], Text::class)
 ;
 
 $registry->register($def);
 
 $user = User::create(new Email('corey@narwhunderful.com'));
 var_dump($user);
+
+$repo = new UserGateway();
+var_dump($repo);
