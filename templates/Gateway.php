@@ -1,6 +1,7 @@
 <<?= '?php' ?> namespace <?= $namespace ?>;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
+use BapCat\Remodel\GatewayQuery;
 
 class <?= $name ?>Gateway {
   protected static $MAPPINGS = [
@@ -18,7 +19,7 @@ class <?= $name ?>Gateway {
   public function query() {
     return new GatewayQuery(
       $this,
-      Capsule::table(<?= $table ?>),
+      Capsule::table('<?= $table ?>'),
       static::$MAPPINGS,
       array_flip(static::$MAPPINGS),
       static::$VIRTUAL
