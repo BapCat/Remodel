@@ -4,6 +4,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use BapCat\Phi\Phi;
 use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
 use BapCat\Tailor\Tailor;
 use BapCat\Tailor\PersistTemplateFinder;
@@ -62,6 +63,7 @@ use BapCat\Remodel\Registry;
 use BapCat\Remodel\EntityDefinition;
 use BapCat\CoolThing\User;
 use BapCat\CoolThing\UserGateway;
+use BapCat\CoolThing\UserRepository;
 
 $registry = new Registry($tailor);
 
@@ -79,9 +81,12 @@ $registry->register($def);
 $user = User::create(new Email('corey@narwhunderful.com'));
 var_dump($user);
 
-$repo = new UserGateway();
-var_dump($repo);
-var_dump($repo->query()
+$gate = new UserGateway();
+var_dump($gate);
+var_dump($gate->query()
   ->select('id', 'email', 'full_email', 'first_name', 'last_name', 'full_name')
   ->get()
 );
+
+$repo = new UserRepository(Phi::instance(), $gate);
+var_dump($repo->get());

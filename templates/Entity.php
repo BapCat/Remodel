@@ -43,15 +43,6 @@ function defsToArgs(array $defs) {
 class <?= $name ?> {
   use \BapCat\Propifier\PropifierTrait;
   
-  public static $DEFINITION = [
-<?php foreach($required as $def): ?>
-    '<?= $def['mapped'] ?>' => ['required' => true, 'type' => \<?= $def['type'] ?>::class],
-<?php endforeach; ?>
-<?php foreach($optional as $def): ?>
-    '<?= $def['mapped'] ?>' => ['required' => false, 'type' => \<?= $def['type'] ?>::class],
-<?php endforeach; ?>
-  ];
-  
 <?php foreach(array_merge($ids, $required, $optional) as $def): ?>
   private $<?= $def['mapped'] ?>;
 <?php endforeach; ?>
@@ -87,7 +78,7 @@ class <?= $name ?> {
   }
   
   protected function set<?= $def['inflected'] ?>(<?= defToParam($def) ?>) {
-    $this-><?= $def['mapped'] ?> = <?= $def['mapped'] ?>;
+    $this-><?= $def['mapped'] ?> = $<?= $def['mapped'] ?>;
   }
 <?php endforeach; ?>
 }

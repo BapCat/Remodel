@@ -13,6 +13,7 @@
   ],
   "require": {
     "php": ">=5.5.0",
+    "bapcat/interfaces": "dev-master",
     "bapcat/tailor": "dev-master",
     "bapcat/propifier": "dev-master",
     "icanboogie/inflector": "dev-master",
@@ -20,6 +21,7 @@
   },
   "require-dev": {
     "bapcat/values": "dev-master",
+    "bapcat/phi": "dev-master",
     "satooshi/php-coveralls": "dev-master"
   },
   "autoload": {
