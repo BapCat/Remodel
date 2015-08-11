@@ -1,12 +1,43 @@
 <?php namespace BapCat\Remodel;
 
 use BapCat\Tailor\Tailor;
+use ICanBoogie\Inflector;
 
 class Registry {
+  private static $globalFunctionsRegistered = false;
+  
   private $tailor;
   
   public function __construct(Tailor $tailor) {
     $this->tailor = $tailor;
+    
+    if(!self::$globalFunctionsRegistered) {
+      self::$globalFunctionsRegistered = true;
+      
+      function titlize($input) {
+        return Inflector::get()->camelize($input);
+      }
+      
+      function camelize($input) {
+        return Inflector::get()->camelize($input, true);
+      }
+      
+      function underscore($input) {
+        return Inflector::get()->underscore($input);
+      }
+      
+      function pluralize($input) {
+        return Inflector::get()->pluralize($input);
+      }
+      
+      function singularize($input) {
+        return Inflector::get()->singularize($input);
+      }
+      
+      function humanize($input) {
+        return Inflector::get()->humanize($input);
+      }
+    }
   }
   
   public function register(EntityDefinition $builder) {

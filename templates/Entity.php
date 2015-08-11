@@ -4,6 +4,8 @@
 
 use BapCat\Remodel\EntityDefinitionOptions;
 
+use function BapCat\Remodel\titlize;
+
 function defToParam(EntityDefinitionOptions $def, $nullable = false) {
   return "\\{$def->type} \${$def->alias}" . ($nullable ? ' = null' : '');
 }
@@ -68,16 +70,16 @@ class <?= $name ?> {
     return $entity;
   }
   
-  protected function get<?= $id->alias ?>() {
+  protected function get<?= titlize($id->alias) ?>() {
     return $this-><?= $id->alias ?>;
   }
-  
 <?php foreach(array_merge($required, $optional) as $def): ?>
-  protected function get<?= $def->alias ?>() {
+  
+  protected function get<?= titlize($def->alias) ?>() {
     return $this-><?= $def->alias ?>;
   }
   
-  protected function set<?= $def->alias ?>(<?= defToParam($def) ?>) {
+  protected function set<?= titlize($def->alias) ?>(<?= defToParam($def) ?>) {
     $this-><?= $def->alias ?> = $<?= $def->alias ?>;
   }
 <?php endforeach; ?>

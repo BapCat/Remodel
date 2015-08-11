@@ -1,12 +1,12 @@
 <?php namespace BapCat\Remodel;
 
 use BapCat\Propifier\PropifierTrait;
-use ICanBoogie\Inflector;
+
+use function BapCat\Remodel\pluralize;
+use function BapCat\Remodel\underscore;
 
 class EntityDefinition {
   use PropifierTrait;
-  
-  private $inflector;
   
   private $fullname;
   private $name;
@@ -20,11 +20,10 @@ class EntityDefinition {
   public function __construct($name) {
     $split = explode('\\', $name);
     
-    $this->inflector = Inflector::get();
     $this->fullname = $name;
     $this->name = array_pop($split);
     $this->namespace = implode('\\', $split);
-    $this->table = $this->inflector->pluralize($this->name);
+    $this->table = pluralize(underscore($this->name));
   }
   
   public function id($type) {
@@ -40,7 +39,7 @@ class EntityDefinition {
   }
   
   public function virtual($alias, $type, $raw) {
-    $this->virtual[] = ['raw' => $raw, 'alias' => $alias, 'inflected' => $this->inflector->camelize($alias), 'type' => $type];
+    $this->virtual[] = ['raw' => $raw, 'alias' => $alias, 'type' => $type];
   }
   
   protected function getFullname() {
