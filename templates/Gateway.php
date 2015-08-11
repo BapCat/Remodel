@@ -5,14 +5,14 @@ use BapCat\Remodel\GatewayQuery;
 
 class <?= $name ?>Gateway {
   protected static $MAPPINGS = [
-<?php foreach(array_merge($ids, $required, $optional) as $def): ?>
-    '<?= $def['mapped'] ?>' => '<?= $def['raw'] ?>',
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+    '<?= $def->alias ?>' => '<?= $def->raw ?>',
 <?php endforeach; ?>
   ];
   
   protected static $VIRTUAL = [
 <?php foreach($virtual as $def): ?>
-    '<?= $def['mapped'] ?>' => <?= var_export($def['raw'], true) ?>,
+    '<?= $def['alias'] ?>' => <?= var_export($def['raw'], true) ?>,
 <?php endforeach; ?>
   ];
   

@@ -2,8 +2,10 @@
 
 <?php
 
-function defToParam(array $def, $nullable = false) {
-  return "\\{$def['type']} \${$def['mapped']}" . ($nullable ? ' = null' : '');
+use BapCat\Remodel\EntityDefinitionOptions;
+
+function defToParam(EntityDefinitionOptions $def, $nullable = false) {
+  return "\\{$def->type} \${$def->alias}" . ($nullable ? ' = null' : '');
 }
 
 function defsToParams(array $defs, $nullable = false) {
@@ -20,8 +22,8 @@ function defsToParams(array $defs, $nullable = false) {
   return $params;
 }
 
-function defToArg(array $def) {
-  return "\${$def['mapped']}";
+function defToArg(EntityDefinitionOptions $def) {
+  return "\${$def->alias}";
 }
 
 function defsToArgs(array $defs) {
@@ -43,8 +45,8 @@ function defsToArgs(array $defs) {
 class <?= $name ?> {
   use \BapCat\Propifier\PropifierTrait;
   
-<?php foreach(array_merge($ids, $required, $optional) as $def): ?>
-  private $<?= $def['mapped'] ?>;
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+  private $<?= $def->alias ?>;
 <?php endforeach; ?>
   
   private function __construct() { }
@@ -53,32 +55,30 @@ class <?= $name ?> {
     return self::make(null, <?= defsToArgs($required) ?>);
   }
   
-  public static function from(<?= defsToParams(array_merge($ids, $required)) ?>) {
-    return self::make(<?= defsToArgs(array_merge($ids, $required)) ?>);
+  public static function from(<?= defsToParams(array_merge([$id], $required)) ?>) {
+    return self::make(<?= defsToArgs(array_merge([$id], $required)) ?>);
   }
   
-  private static function make(<?= defsToParams(array_merge($ids, $required, $optional), true) ?>) {
+  private static function make(<?= defsToParams(array_merge([$id], $required, $optional), true) ?>) {
     $entity = new User();
-<?php foreach(array_merge($ids, $required, $optional) as $def): ?>
-    $entity-><?= $def['mapped'] ?> = $<?= $def['mapped'] ?>;
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+    $entity-><?= $def->alias ?> = $<?= $def->alias ?>;
 <?php endforeach; ?>
     
     return $entity;
   }
   
-<?php foreach($ids as $id): ?>
-  protected function get<?= $id['inflected'] ?>() {
-    return $this-><?= $id['mapped'] ?>;
+  protected function get<?= $id->alias ?>() {
+    return $this-><?= $id->alias ?>;
   }
-<?php endforeach; ?>
   
 <?php foreach(array_merge($required, $optional) as $def): ?>
-  protected function get<?= $def['inflected'] ?>() {
-    return $this-><?= $def['mapped'] ?>;
+  protected function get<?= $def->alias ?>() {
+    return $this-><?= $def->alias ?>;
   }
   
-  protected function set<?= $def['inflected'] ?>(<?= defToParam($def) ?>) {
-    $this-><?= $def['mapped'] ?> = $<?= $def['mapped'] ?>;
+  protected function set<?= $def->alias ?>(<?= defToParam($def) ?>) {
+    $this-><?= $def->alias ?> = $<?= $def->alias ?>;
   }
 <?php endforeach; ?>
 }

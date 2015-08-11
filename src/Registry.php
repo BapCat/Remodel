@@ -10,25 +10,14 @@ class Registry {
   }
   
   public function register(EntityDefinition $builder) {
-    $required = [];
-    $optional = [];
-    
-    foreach($builder->values as $value) {
-      if($value['req']) {
-        $required[] = $value;
-      } else {
-        $optional[] = $value;
-      }
-    }
-    
     $options = [
-      'namespace'    => $builder->namespace,
-      'name'         => $builder->name,
-      'table'        => $builder->table,
-      'ids'          => $builder->ids,
-      'required'     => $required,
-      'optional'     => $optional,
-      'virtual'      => $builder->virtuals
+      'namespace' => $builder->namespace,
+      'name'      => $builder->name,
+      'table'     => $builder->table,
+      'id'        => $builder->id,
+      'required'  => $builder->required,
+      'optional'  => $builder->optional,
+      'virtual'   => $builder->virtual
     ];
     
     $this->tailor->bind($builder->fullname, 'Entity', $options);

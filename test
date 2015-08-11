@@ -67,14 +67,13 @@ use BapCat\CoolThing\UserRepository;
 
 $registry = new Registry($tailor);
 
-$def = (new EntityDefinition(User::class, 'users'))
-  ->id('id', 'id', CoolIdentifier::class)
-  ->required('email', 'email', Email::class)
-  ->optional('first_name', 'first_name', Text::class)
-  ->optional('last_name', 'last_name', Text::class)
-  ->virtual('full_email', ['First_Name', "' '", 'Last_Name', "' <'", 'Email', "'>'"], Text::class)
-  ->virtual('full_name', ['First_Name', "' '", 'Last_Name'], Text::class)
-;
+$def = new EntityDefinition(User::class);
+$def->id(CoolIdentifier::class);
+$def->required('email', Email::class);
+$def->optional('first_name', Text::class);
+$def->optional('last_name', Text::class);
+$def->virtual('full_email', Text::class, ['First_Name', "' '", 'Last_Name', "' <'", 'Email', "'>'"]);
+$def->virtual('full_name', Text::class, ['First_Name', "' '", 'Last_Name']);
 
 $registry->register($def);
 

@@ -12,41 +12,35 @@ class EntityDefinition {
   private $name;
   private $namespace;
   private $table;
-  private $ids = [];
-  private $values = [];
+  private $id;
+  private $required = [];
+  private $optional = [];
   private $virtual = [];
   
-  public function __construct($name, $table) {
+  public function __construct($name) {
     $split = explode('\\', $name);
     
     $this->inflector = Inflector::get();
     $this->fullname = $name;
     $this->name = array_pop($split);
     $this->namespace = implode('\\', $split);
-    $this->table = $table;
+    $this->table = $this->inflector->pluralize($this->name);
   }
   
-  private function add($mapped_name, $raw_name, $type, $required) {
-    $this->values[] = ['raw' => $raw_name, 'mapped' => $mapped_name, 'inflected' => $this->inflector->camelize($mapped_name), 'type' => $type, 'req' => $required];
-    return $this;
+  public function id($type) {
+    return $this->id = new EntityDefinitionOptions('id', $type);
   }
   
-  public function id($mapped_name, $raw_name, $type) {
-    $this->ids[] = ['raw' => $raw_name, 'mapped' => $mapped_name, 'inflected' => $this->inflector->camelize($mapped_name), 'type' => $type];
-    return $this;
+  public function required($alias, $type) {
+    return $this->required[] = new EntityDefinitionOptions($alias, $type);
   }
   
-  public function required($mapped_name, $raw_name, $type) {
-    return $this->add($raw_name, $mapped_name, $type, true);
+  public function optional($alias, $type) {
+    return $this->optional[] = new EntityDefinitionOptions($alias, $type);
   }
   
-  public function optional($mapped_name, $raw_name, $type) {
-    return $this->add($raw_name, $mapped_name, $type, false);
-  }
-  
-  public function virtual($mapped_name, $raw_name, $type) {
-    $this->virtual[] = ['raw' => $raw_name, 'mapped' => $mapped_name, 'inflected' => $this->inflector->camelize($mapped_name), 'type' => $type];
-    return $this;
+  public function virtual($alias, $type, $raw) {
+    $this->virtual[] = ['raw' => $raw, 'alias' => $alias, 'inflected' => $this->inflector->camelize($alias), 'type' => $type];
   }
   
   protected function getFullname() {
@@ -65,27 +59,19 @@ class EntityDefinition {
     return $this->table;
   }
   
-  protected function getId($index) {
-    return $this->ids[$index];
+  protected function getId() {
+    return $this->id;
   }
   
-  protected function getIds() {
-    return $this->ids;
+  protected function getRequired() {
+    return $this->required;
   }
   
-  protected function getValue($index) {
-    return $this->values[$index];
+  protected function getOptional() {
+    return $this->optional;
   }
   
-  protected function getValues() {
-    return $this->values;
-  }
-  
-  protected function getVirtual($index) {
-    return $this->virtual[$index];
-  }
-  
-  protected function getVirtuals() {
+  protected function getVirtual() {
     return $this->virtual;
   }
 }

@@ -7,14 +7,14 @@ class <?= $name ?>Repository {
   private $scopes = [];
   
   private static $REQUIRED = [
-<?php foreach(array_merge($ids, $required) as $def): ?>
-    '<?= $def['mapped'] ?>' => \<?= $def['type'] ?>::class,
+<?php foreach(array_merge([$id], $required) as $def): ?>
+    '<?= $def->alias ?>' => \<?= $def->type ?>::class,
 <?php endforeach; ?>
   ];
   
   private static $OPTIONAL = [
 <?php foreach($optional as $def): ?>
-    '<?= $def['mapped'] ?>' => \<?= $def['type'] ?>::class,
+    '<?= $def->alias ?>' => \<?= $def->type ?>::class,
 <?php endforeach; ?>
   ];
   
@@ -25,8 +25,8 @@ class <?= $name ?>Repository {
   }
 <?php foreach(array_merge($required, $optional) as $def): ?>
   
-  public function <?= $def['mapped'] ?>(\<?= $def['type'] ?> $<?= $def['mapped'] ?>) {
-    $this->scopes['<?= $def['mapped'] ?>'] = $<?= $def['mapped'] ?>;
+  public function <?= $def->alias ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
+    $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
     return $this;
   }
 <?php endforeach; ?>
