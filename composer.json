@@ -21,8 +21,7 @@
   },
   "require-dev": {
     "bapcat/values": "dev-master",
-    "bapcat/phi": "dev-master",
-    "satooshi/php-coveralls": "dev-master"
+    "bapcat/phi": "dev-master"
   },
   "autoload": {
     "psr-4": {
