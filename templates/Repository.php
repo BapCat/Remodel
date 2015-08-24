@@ -25,7 +25,7 @@ class <?= $name ?>Repository {
     $this->entity  = \<?= $namespace ?>\<?= $name ?>::class;
     $this->gateway = $gateway;
   }
-<?php foreach(array_merge($required, $optional) as $def): ?>
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
   public function with<?= titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
     $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
