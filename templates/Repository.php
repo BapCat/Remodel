@@ -1,6 +1,6 @@
 <<?= '?php' ?> namespace <?= $namespace ?>;
 
-<?php use function BapCat\Remodel\titlize; ?>
+<?php /*use function BapCat\Remodel\titlize;*/ ?>
 
 class <?= $name ?>Repository {
   private $ioc;
@@ -27,7 +27,7 @@ class <?= $name ?>Repository {
   }
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
-  public function with<?= titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
+  public function with<?= \BapCat\Remodel\titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
     $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
     return $this;
   }

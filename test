@@ -42,11 +42,10 @@ $capsule->setAsGlobal();
 
 //-----------------------------------------------------------
 
-use BapCat\Values\Identifier;
 use BapCat\Values\Email;
 use BapCat\Values\Text;
 
-class CoolIdentifier extends Identifier {
+class CoolIdentifier {
   public function __construct($id) {
     $this->validate($id);
     parent::__construct($id);
