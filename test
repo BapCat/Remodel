@@ -71,13 +71,13 @@ $def->virtual('full_name', Text::class, ['First_Name', "' '", 'Last_Name']);
 $registry->register($def);
 
 $user = User::create(new Email('corey@narwhunderful.com'));
-var_dump($user);
+var_export($user);
 
 $gate = new UserGateway($connection);
-var_dump($gate->query()
+var_export($gate->query()
   ->select('id', 'email', 'full_email', 'first_name', 'last_name', 'full_name')
   ->get()
 );
 
 $repo = new UserRepository(Phi::instance(), $gate);
-var_dump($repo->get());
+var_export($repo->orderByEmail()->get());

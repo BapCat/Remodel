@@ -7,6 +7,8 @@ class <?= $name ?>Repository {
   private $entity;
   private $gateway;
   private $scopes = [];
+  private $order_bys = [];
+  private $limit = 0;
   
   private static $REQUIRED = [
 <?php foreach(array_merge([$id], $required) as $def): ?>
@@ -25,19 +27,16 @@ class <?= $name ?>Repository {
     $this->entity  = \<?= $namespace ?>\<?= $name ?>::class;
     $this->gateway = $gateway;
   }
-<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
-  
-  public function with<?= \BapCat\Remodel\titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
-    $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
-    return $this;
-  }
-<?php endforeach; ?>
   
   private function buildQuery() {
     $query = $this->gateway->query();
     
     foreach($this->scopes as $col => $value) {
       $query = $query->where($col, $value);
+    }
+    
+    foreach($this->order_bys as $order_by) {
+      $query = $query->orderBy($order_by);
     }
     
     $scopes = [];
@@ -62,12 +61,33 @@ class <?= $name ?>Repository {
     
     return $entity;
   }
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+  
+  public function with<?= \BapCat\Remodel\titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
+    $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
+    return $this;
+  }
+<?php endforeach; ?>
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+  
+  public function orderBy<?= \BapCat\Remodel\titlize($def->alias) ?>() {
+    $this->order_bys[] = '<?= $def->alias ?>';
+    return $this;
+  }
+<?php endforeach; ?>
+  
+  public function limit($count) {
+    $this->limit = $count;
+  }
   
   public function get() {
-    $raw = $this
-      ->buildQuery()
-      ->get()
-    ;
+    $raw = $this->buildQuery();
+    
+    if($this->limit !== 0) {
+      $raw = $raw->limit($this->limit);
+    }
+    
+    $raw = $raw->get();
     
     $entities = [];
     
@@ -79,12 +99,10 @@ class <?= $name ?>Repository {
   }
   
   public function first() {
-    $raw = $this
-      ->buildQuery()
-      ->limit(1)
-      ->get()
-        [0]
-    ;
+    //TODO: do not assume there will be results
+    
+    $this->limit(1);
+    $raw = $this->get()[0];
     
     return $this->buildEntity($raw);
   }
