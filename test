@@ -39,6 +39,7 @@ use BapCat\CoolThing\User;
 use BapCat\CoolThing\UserId;
 use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
+use BapCat\CoolThing\UserNotFoundException;
 
 $registry = new Registry($tailor);
 
@@ -63,3 +64,9 @@ var_export($gate->query()
 
 $repo = new UserRepository(Phi::instance(), $gate);
 var_export($repo->orderByEmail()->get());
+
+try {
+  $repo->withEmail(new Email('i@dont.exist'))->first();
+} catch(UserNotFoundException $ex) {
+  echo 'User not found (this is supposed to happen)';
+}

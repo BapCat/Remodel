@@ -99,9 +99,13 @@ class <?= $name ?>Repository {
   }
   
   public function first() {
-    //TODO: do not assume there will be results
-    
     $this->limit(1);
-    return $this->get()[0];
+    $entities = $this->get();
+    
+    if(count($entities) === 0) {
+      throw new <?= $name ?>NotFoundException();
+    }
+    
+    return $entities[0];
   }
 }
