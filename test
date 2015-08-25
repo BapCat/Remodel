@@ -4,12 +4,13 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use BapCat\Interfaces\Values\Value;
 use BapCat\Phi\Phi;
 use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
 use BapCat\Tailor\Tailor;
 use BapCat\Tailor\PersistTemplateFinder;
 use BapCat\Tailor\Compilers\PhpCompiler;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\MySqlConnection;
 
 // Grab filesystem directories
 $persist = new FilesystemDriver(__DIR__ . '/templates');
@@ -25,36 +26,29 @@ $compiler = new PhpCompiler();
 // Create an instance of Tailor to actually do the autoloading
 $tailor = new Tailor($finder, $compiler);
 
-$capsule = new Capsule();
-
-$capsule->addConnection([
-  'driver'    => 'mysql',
-  'host'      => 'localhost',
-  'database'  => 'test',
-  'username'  => 'test',
-  'password'  => 'test',
-  'charset'   => 'utf8',
-  'collation' => 'utf8_unicode_ci',
-  'prefix'    => '',
-]);
-
-$capsule->setAsGlobal();
+$connection = new MySqlConnection(new PDO('mysql:host=localhost;dbname=test', 'root', ''), 'test');
 
 //-----------------------------------------------------------
 
 use BapCat\Values\Email;
 use BapCat\Values\Text;
 
-class CoolIdentifier {
+class CoolIdentifier extends Value {
+  private $id;
+  
   public function __construct($id) {
     $this->validate($id);
-    parent::__construct($id);
+    $this->id = (integer)$id;
   }
   
   private function validate($id) {
     if(filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
       throw new InvalidArgumentException("Expected a valid ID, but got [$id] instead");
     }
+  }
+  
+  protected function getRaw() {
+    return $this->id;
   }
 }
 
@@ -79,8 +73,7 @@ $registry->register($def);
 $user = User::create(new Email('corey@narwhunderful.com'));
 var_dump($user);
 
-$gate = new UserGateway();
-var_dump($gate);
+$gate = new UserGateway($connection);
 var_dump($gate->query()
   ->select('id', 'email', 'full_email', 'first_name', 'last_name', 'full_name')
   ->get()
