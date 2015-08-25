@@ -62,7 +62,7 @@ class <?= $name ?> {
   }
   
   private static function make(<?= defsToParams(array_merge([$id], $required, $optional), true) ?>) {
-    $entity = new User();
+    $entity = new \<?= $namespace ?>\<?= $name ?>();
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
     $entity-><?= $def->alias ?> = $<?= $def->alias ?>;
 <?php endforeach; ?>

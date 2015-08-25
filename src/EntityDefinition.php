@@ -23,6 +23,10 @@ class EntityDefinition {
     $this->table = pluralize(underscore($this->name));
   }
   
+  public function table($table) {
+    $this->table = $table;
+  }
+  
   public function id($type) {
     return $this->id = new EntityDefinitionOptions('id', $type);
   }
