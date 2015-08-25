@@ -52,6 +52,7 @@ class Registry {
     ];
     
     $this->tailor->bind($builder->fullname, 'Entity', $options);
+    $this->tailor->bind($builder->fullname . 'Id', 'Id', $options);
     $this->tailor->bind($builder->fullname . 'Gateway', 'Gateway', $options);
     $this->tailor->bind($builder->fullname . 'Repository', 'Repository', $options);
   }

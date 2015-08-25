@@ -13,9 +13,9 @@ use BapCat\Tailor\Compilers\PhpCompiler;
 use Illuminate\Database\MySqlConnection;
 
 // Grab filesystem directories
-$persist = new FilesystemDriver(__DIR__ . '/templates');
-$templates = $persist->get('/');
-$compiled  = $persist->get('/');
+$persist = new FilesystemDriver(__DIR__);
+$templates = $persist->get('/templates');
+$compiled  = $persist->get('/cache');
 
 // TemplateFinders are able to find and use raw/compiled templates
 $finder = new PersistTemplateFinder($templates, $compiled);
@@ -33,35 +33,17 @@ $connection = new MySqlConnection(new PDO('mysql:host=localhost;dbname=test', 'r
 use BapCat\Values\Email;
 use BapCat\Values\Text;
 
-class CoolIdentifier extends Value {
-  private $id;
-  
-  public function __construct($id) {
-    $this->validate($id);
-    $this->id = (integer)$id;
-  }
-  
-  private function validate($id) {
-    if(filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
-      throw new InvalidArgumentException("Expected a valid ID, but got [$id] instead");
-    }
-  }
-  
-  protected function getRaw() {
-    return $this->id;
-  }
-}
-
 use BapCat\Remodel\Registry;
 use BapCat\Remodel\EntityDefinition;
 use BapCat\CoolThing\User;
+use BapCat\CoolThing\UserId;
 use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 
 $registry = new Registry($tailor);
 
 $def = new EntityDefinition(User::class);
-$def->id(CoolIdentifier::class);
+$def->id(UserId::class);
 $def->required('email', Email::class);
 $def->optional('first_name', Text::class);
 $def->optional('last_name', Text::class);
