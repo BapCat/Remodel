@@ -78,6 +78,7 @@ class <?= $name ?>Repository {
   
   public function limit($count) {
     $this->limit = $count;
+    return $this;
   }
   
   public function get() {
