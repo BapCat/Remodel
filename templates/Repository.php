@@ -102,8 +102,6 @@ class <?= $name ?>Repository {
     //TODO: do not assume there will be results
     
     $this->limit(1);
-    $raw = $this->get()[0];
-    
-    return $this->buildEntity($raw);
+    return $this->get()[0];
   }
 }
