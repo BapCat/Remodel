@@ -20,7 +20,8 @@ class EntityDefinition {
     $this->fullname = $name;
     $this->name = array_pop($split);
     $this->namespace = implode('\\', $split);
-    $this->table = pluralize(underscore($this->name));
+    $this->table(pluralize(underscore($this->name)));
+    $this->id($name . 'Id');
   }
   
   public function table($table) {

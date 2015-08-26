@@ -44,7 +44,6 @@ use BapCat\CoolThing\UserNotFoundException;
 $registry = new Registry($tailor);
 
 $def = new EntityDefinition(User::class);
-$def->id(UserId::class);
 $def->required('email', Email::class);
 $def->optional('first_name', Text::class);
 $def->optional('last_name', Text::class);
