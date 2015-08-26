@@ -47,8 +47,8 @@ $def = new EntityDefinition(User::class);
 $def->required('email', Email::class);
 $def->optional('first_name', Text::class);
 $def->optional('last_name', Text::class);
-$def->virtual('full_email', Text::class, ['First_Name', "' '", 'Last_Name', "' <'", 'Email', "'>'"]);
-$def->virtual('full_name', Text::class, ['First_Name', "' '", 'Last_Name']);
+$def->virtual('full_email', Text::class, ['first_name', "' '", 'last_name', "' <'", 'email', "'>'"]);
+$def->virtual('full_name', Text::class, ['first_name', "' '", 'last_name']);
 
 $registry->register($def);
 

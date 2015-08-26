@@ -42,6 +42,24 @@ function defsToArgs(array $defs) {
   return $args;
 }
 
+function virtualToArg(array $def) {
+  return "\$entity->{$def['alias']}";
+}
+
+function virtualsToArgs(array $defs) {
+  $args = '';
+  
+  foreach($defs as $i => $def) {
+    $args .= virtualToArg($def);
+    
+    if($i < count($defs) - 1) {
+      $args .= ', ';
+    }
+  }
+  
+  return $args;
+}
+
 ?>
 
 class <?= $name ?> {
@@ -49,6 +67,9 @@ class <?= $name ?> {
   
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   private $<?= $def->alias ?>;
+<?php endforeach; ?>
+<?php foreach($virtual as $def): ?>
+  private $<?= $def['alias'] ?>;
 <?php endforeach; ?>
   
   private function __construct() { }
@@ -59,6 +80,12 @@ class <?= $name ?> {
   
   public static function from(<?= defsToParams(array_merge([$id], $required)) ?>) {
     return self::make(<?= defsToArgs(array_merge([$id], $required)) ?>);
+  }
+  
+  public static function fromRepository(<?= defsToParams(array_merge([$id], $required)) ?>, callable $accessor) {
+    $entity = static::from(<?= defsToArgs(array_merge([$id], $required)) ?>);
+    $accessor(<?= virtualsToArgs($virtual) ?>);
+    return $entity;
   }
   
   private static function make(<?= defsToParams(array_merge([$id], $required, $optional), true) ?>) {

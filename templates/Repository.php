@@ -1,6 +1,28 @@
 <<?= '?php' ?> namespace <?= $namespace ?>;
 
-<?php /*use function BapCat\Remodel\titlize;*/ ?>
+<?php
+
+/*use function BapCat\Remodel\titlize;*/
+
+function repoVirtualToParam(array $def) {
+  return "&\${$def['alias']}";
+}
+
+function repoVirtualsToParams(array $defs) {
+  $args = '';
+  
+  foreach($defs as $i => $def) {
+    $args .= repoVirtualToParam($def);
+    
+    if($i < count($defs) - 1) {
+      $args .= ', ';
+    }
+  }
+  
+  return $args;
+}
+
+?>
 
 class <?= $name ?>Repository {
   private $ioc;
@@ -22,6 +44,15 @@ class <?= $name ?>Repository {
 <?php endforeach; ?>
   ];
   
+  private static $SELECT_FIELDS = [
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+    '<?= $def->alias ?>',
+<?php endforeach; ?>
+<?php foreach($virtual as $def): ?>
+    '<?= $def['alias'] ?>',
+<?php endforeach; ?>
+  ];
+  
   public function __construct(\BapCat\Interfaces\Ioc\Ioc $ioc, \<?= $namespace ?>\<?= $name ?>Gateway $gateway) {
     $this->ioc     = $ioc;
     $this->entity  = \<?= $namespace ?>\<?= $name ?>::class;
@@ -29,7 +60,11 @@ class <?= $name ?>Repository {
   }
   
   private function buildQuery() {
-    $query = $this->gateway->query();
+    $query = $this
+      ->gateway
+      ->query()
+      ->select(static::$SELECT_FIELDS)
+    ;
     
     foreach($this->scopes as $col => $value) {
       $query = $query->where($col, $value);
@@ -53,7 +88,11 @@ class <?= $name ?>Repository {
       $required[$col] = $this->ioc->make($type, [$raw[$col]]);
     }
     
-    $entity = $this->ioc->execute($className, 'from', $required);
+    $entity = $this->ioc->execute($className, 'fromRepository', array_merge($required, [function(<?= repoVirtualsToParams($virtual) ?>) use($raw) {
+<?php foreach($virtual as $def): ?>
+      $<?= $def['alias'] ?> = $this->ioc->make(\<?= $def['type'] ?>::class, [$raw['<?= $def['alias'] ?>']]);
+<?php endforeach; ?>
+    }]));
     
     foreach(self::$OPTIONAL as $col => $type) {
       $entity->$col = $this->ioc->make($type, [$raw[$col]]);
