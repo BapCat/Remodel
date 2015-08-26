@@ -4,22 +4,24 @@
 
 /*use function BapCat\Remodel\titlize;*/
 
-function repoVirtualToParam(array $def) {
-  return "&\${$def['alias']}";
-}
-
-function repoVirtualsToParams(array $defs) {
-  $args = '';
-  
-  foreach($defs as $i => $def) {
-    $args .= repoVirtualToParam($def);
-    
-    if($i < count($defs) - 1) {
-      $args .= ', ';
-    }
+if(!function_exists('repoVirtualToParam')) {
+  function repoVirtualToParam(array $def) {
+    return "&\${$def['alias']}";
   }
-  
-  return $args;
+
+  function repoVirtualsToParams(array $defs) {
+    $args = '';
+    
+    foreach($defs as $i => $def) {
+      $args .= repoVirtualToParam($def);
+      
+      if($i < count($defs) - 1) {
+        $args .= ', ';
+      }
+    }
+    
+    return $args;
+  }
 }
 
 ?>

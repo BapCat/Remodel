@@ -6,58 +6,60 @@ use BapCat\Remodel\EntityDefinitionOptions;
 
 //use function BapCat\Remodel\titlize;
 
-function defToParam(EntityDefinitionOptions $def, $nullable = false) {
-  return "\\{$def->type} \${$def->alias}" . ($nullable ? ' = null' : '');
-}
-
-function defsToParams(array $defs, $nullable = false) {
-  $params = '';
-  
-  foreach($defs as $i => $def) {
-    $params .= defToParam($def, $nullable);
-    
-    if($i < count($defs) - 1) {
-      $params .= ', ';
-    }
+if(!function_exists('defToParam')) {
+  function defToParam(EntityDefinitionOptions $def, $nullable = false) {
+    return "\\{$def->type} \${$def->alias}" . ($nullable ? ' = null' : '');
   }
-  
-  return $params;
-}
 
-function defToArg(EntityDefinitionOptions $def) {
-  return "\${$def->alias}";
-}
-
-function defsToArgs(array $defs) {
-  $args = '';
-  
-  foreach($defs as $i => $def) {
-    $args .= defToArg($def);
+  function defsToParams(array $defs, $nullable = false) {
+    $params = '';
     
-    if($i < count($defs) - 1) {
-      $args .= ', ';
+    foreach($defs as $i => $def) {
+      $params .= defToParam($def, $nullable);
+      
+      if($i < count($defs) - 1) {
+        $params .= ', ';
+      }
     }
-  }
-  
-  return $args;
-}
-
-function virtualToArg(array $def) {
-  return "\$entity->{$def['alias']}";
-}
-
-function virtualsToArgs(array $defs) {
-  $args = '';
-  
-  foreach($defs as $i => $def) {
-    $args .= virtualToArg($def);
     
-    if($i < count($defs) - 1) {
-      $args .= ', ';
-    }
+    return $params;
   }
-  
-  return $args;
+
+  function defToArg(EntityDefinitionOptions $def) {
+    return "\${$def->alias}";
+  }
+
+  function defsToArgs(array $defs) {
+    $args = '';
+    
+    foreach($defs as $i => $def) {
+      $args .= defToArg($def);
+      
+      if($i < count($defs) - 1) {
+        $args .= ', ';
+      }
+    }
+    
+    return $args;
+  }
+
+  function virtualToArg(array $def) {
+    return "\$entity->{$def['alias']}";
+  }
+
+  function virtualsToArgs(array $defs) {
+    $args = '';
+    
+    foreach($defs as $i => $def) {
+      $args .= virtualToArg($def);
+      
+      if($i < count($defs) - 1) {
+        $args .= ', ';
+      }
+    }
+    
+    return $args;
+  }
 }
 
 ?>
