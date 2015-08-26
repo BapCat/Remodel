@@ -112,4 +112,10 @@ class <?= $name ?> {
     $this-><?= $def->alias ?> = $<?= $def->alias ?>;
   }
 <?php endforeach; ?>
+<?php foreach($virtual as $def): ?>
+  
+  protected function get<?= \BapCat\Remodel\titlize($def['alias']) ?>() {
+    return $this-><?= $def['alias'] ?>;
+  }
+<?php endforeach; ?>
 }
