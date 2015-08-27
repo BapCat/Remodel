@@ -72,6 +72,10 @@ class GatewayQuery {
     return $mapped;
   }
   
+  public function insertGetId(array $data) {
+    return $this->builder->insertGetId($data);
+  }
+  
   public function __call($name, array $args) {
     $this->builder = call_user_func_array([$this->builder, $name], $args);
     return $this;

@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+
+<?php
+
+require __DIR__ . '/test-init';
+
+use BapCat\Phi\Phi;
+use BapCat\Values\Email;
+use BapCat\Values\Text;
+
+use BapCat\Remodel\Registry;
+use BapCat\Remodel\EntityDefinition;
+use BapCat\CoolThing\User;
+use BapCat\CoolThing\UserId;
+use BapCat\CoolThing\UserGateway;
+use BapCat\CoolThing\UserRepository;
+use BapCat\CoolThing\UserNotFoundException;
+
+$registry = new Registry($tailor);
+
+$def = new EntityDefinition(User::class);
+$def->required('email', Email::class);
+$def->optional('first_name', Text::class);
+$def->optional('last_name', Text::class);
+$def->virtual('full_email', Text::class, ['first_name', "' '", 'last_name', "' <'", 'email', "'>'"]);
+$def->virtual('full_name', Text::class, ['first_name', "' '", 'last_name']);
+
+$registry->register($def);
+
+$gate = new UserGateway($connection);
+$repo = new UserRepository(Phi::instance(), $gate);
+
+$user = User::create(new Email('corey@narwhunderful.com'));
+$repo->save($user);
+var_dump($user);

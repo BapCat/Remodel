@@ -102,6 +102,33 @@ class <?= $name ?>Repository {
     
     return $entity;
   }
+  
+  public function save(\<?= $namespace ?>\<?= $name ?> $entity) {
+    $fields = [];
+    
+    foreach(self::$REQUIRED as $alias => $type) {
+      $fields[$alias] = $entity->$alias;
+      
+      if($fields[$alias] !== null) {
+        $fields[$alias] = $fields[$alias]->raw;
+      }
+    }
+    
+    $query = $this
+      ->gateway
+      ->query()
+    ;
+    
+    if($entity->id === null) {
+      $entity->id = $this->ioc->make(\<?= $id->type ?>::class, [$query->insertGetId($fields)]);
+    } else {
+      unset($fields['id']);
+      $query
+        ->where('<?= $id->alias ?>', $entity->id)
+        ->update($fields)
+      ;
+    }
+  }
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
   public function with<?= \BapCat\Remodel\titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {

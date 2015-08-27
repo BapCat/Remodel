@@ -98,11 +98,7 @@ class <?= $name ?> {
     
     return $entity;
   }
-  
-  protected function get<?= \BapCat\Remodel\titlize($id->alias) ?>() {
-    return $this-><?= $id->alias ?>;
-  }
-<?php foreach(array_merge($required, $optional) as $def): ?>
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
   protected function get<?= \BapCat\Remodel\titlize($def->alias) ?>() {
     return $this-><?= $def->alias ?>;
