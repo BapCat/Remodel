@@ -10,7 +10,7 @@ class <?= $name ?>Id extends \BapCat\Interfaces\Values\Value {
   
   private function validate($id) {
     if(filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
-      throw new InvalidArgumentException("Expected a valid ID, but got [$id] instead");
+      throw new \InvalidArgumentException("Expected a valid ID, but got [$id] instead");
     }
   }
   
