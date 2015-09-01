@@ -97,7 +97,9 @@ class <?= $name ?>Repository {
     }]));
     
     foreach(self::$OPTIONAL as $col => $type) {
-      $entity->$col = $this->ioc->make($type, [$raw[$col]]);
+      if($raw[$col] !== null) {
+        $entity->$col = $this->ioc->make($type, [$raw[$col]]);
+      }
     }
     
     return $entity;
