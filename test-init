@@ -24,4 +24,7 @@ $compiler = new PhpCompiler();
 // Create an instance of Tailor to actually do the autoloading
 $tailor = new Tailor($finder, $compiler);
 
-$connection = new MySqlConnection(new PDO('mysql:host=localhost;dbname=test', 'root', ''), 'test');
+$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$connection = new MySqlConnection($pdo, 'test');
