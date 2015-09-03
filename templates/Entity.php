@@ -64,7 +64,7 @@ if(!function_exists('defToParam')) {
 
 ?>
 
-class <?= $name ?> {
+class <?= $name ?> implements \BapCat\Remodel\Entity {
   use \BapCat\Propifier\PropifierTrait;
   
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
