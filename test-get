@@ -28,16 +28,23 @@ $def->virtual('full_name', Text::class, ['first_name', "' '", 'last_name']);
 $registry->register($def);
 
 $user = User::create(new Email('corey@narwhunderful.com'));
-var_export($user);
+echo $user;
+echo "\n\n";
+echo json_encode($user);
+echo "\n\n";
 
 $gate = new UserGateway($connection);
-var_export($gate->query()
+echo json_encode($gate->query()
   ->select('id', 'email', 'full_email', 'first_name', 'last_name', 'full_name')
   ->get()
 );
 
+echo "\n\n";
+
 $repo = new UserRepository(Phi::instance(), $gate);
-var_export($repo->orderByEmail()->get());
+echo json_encode($repo->orderByEmail()->get());
+
+echo "\n\n";
 
 try {
   $repo->withEmail(new Email('i@dont.exist'))->first();

@@ -64,7 +64,7 @@ if(!function_exists('defToParam')) {
 
 ?>
 
-class <?= $name ?> implements \BapCat\Remodel\Entity {
+class <?= $name ?> implements \BapCat\Remodel\Entity, \JsonSerializable {
   use \BapCat\Propifier\PropifierTrait;
   
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
@@ -114,4 +114,25 @@ class <?= $name ?> implements \BapCat\Remodel\Entity {
     return $this-><?= $def['alias'] ?>;
   }
 <?php endforeach; ?>
+  
+  public function __toString() {
+    $output = '<?= $namespace ?>\<?= $name ?> ';
+    
+    if($this->id === null) {
+      return $output . '(new)';
+    }
+    
+    return $output . $this->id;
+  }
+  
+  public function jsonSerialize() {
+    return [
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+      '<?= $def->alias ?>' => $this-><?= $def->alias ?>,
+<?php endforeach; ?>
+<?php foreach($virtual as $def): ?>
+      '<?= $def['alias'] ?>' => $this-><?= $def['alias'] ?>,
+<?php endforeach; ?>
+    ];
+  }
 }

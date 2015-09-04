@@ -18,6 +18,10 @@ class <?= $name ?>Id extends \BapCat\Interfaces\Values\Value {
     return (string)$this->id;
   }
   
+  public function jsonSerialize() {
+    return $this->id;
+  }
+  
   protected function getRaw() {
     return $this->id;
   }
