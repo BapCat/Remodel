@@ -5,24 +5,25 @@ require __DIR__ . '/vendor/autoload.php';
 use BapCat\Interfaces\Values\Value;
 use BapCat\Phi\Phi;
 use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
+use BapCat\Remodel\RemodelTemplateFinder;
 use BapCat\Tailor\Tailor;
-use BapCat\Tailor\PersistTemplateFinder;
+use BapCat\Tailor\Compilers\Compiler;
 use BapCat\Tailor\Compilers\PhpCompiler;
 use Illuminate\Database\MySqlConnection;
 
-// Grab filesystem directories
-$persist = new FilesystemDriver(__DIR__);
-$templates = $persist->get('/templates');
-$compiled  = $persist->get('/cache');
+$ioc = Phi::instance();
 
-// TemplateFinders are able to find and use raw/compiled templates
-$finder = new PersistTemplateFinder($templates, $compiled);
+$ioc->bind(RemodelTemplateFinder::class, function() {
+  // Grab filesystem directories
+  $persist = new FilesystemDriver(__DIR__);
+  $compiled  = $persist->get('/cache');
+
+  // TemplateFinders are able to find and use raw/compiled templates
+  return new RemodelTemplateFinder($compiled);
+});
 
 // Compilers translate raw templates into compiled ones
-$compiler = new PhpCompiler();
-
-// Create an instance of Tailor to actually do the autoloading
-$tailor = new Tailor($finder, $compiler);
+$ioc->bind(Compiler::class, PhpCompiler::class);
 
 $pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

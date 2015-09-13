@@ -16,7 +16,7 @@ use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 use BapCat\CoolThing\UserNotFoundException;
 
-$registry = new Registry($tailor);
+$registry = $ioc->make(Registry::class, [$ioc]);
 
 $def = new EntityDefinition(User::class);
 $def->required('email', Email::class);
