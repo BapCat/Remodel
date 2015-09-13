@@ -1,7 +1,7 @@
 <?php namespace BapCat\Remodel;
 
 use BapCat\Interfaces\Ioc\Ioc;
-use BapCat\Tailor\Compilers\Compiler;
+use BapCat\Tailor\Compilers\PhpCompiler;
 use BapCat\Tailor\Tailor;
 use ICanBoogie\Inflector;
 
@@ -10,8 +10,8 @@ class Registry {
   
   private $tailor;
   
-  public function __construct(Ioc $ioc, RemodelTemplateFinder $finder, Compiler $compiler) {
-    $this->tailor = $ioc->make(Tailor::class, [$finder, $compiler]);
+  public function __construct(Ioc $ioc, RemodelTemplateFinder $finder) {
+    $this->tailor = $ioc->make(Tailor::class, [$finder, $ioc->make(PhpCompiler::class)]);
     
     if(!self::$globalFunctionsRegistered) {
       self::$globalFunctionsRegistered = true;

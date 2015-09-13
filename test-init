@@ -17,13 +17,10 @@ $ioc->bind(RemodelTemplateFinder::class, function() {
   // Grab filesystem directories
   $persist = new FilesystemDriver(__DIR__);
   $compiled  = $persist->get('/cache');
-
+  
   // TemplateFinders are able to find and use raw/compiled templates
   return new RemodelTemplateFinder($compiled);
 });
-
-// Compilers translate raw templates into compiled ones
-$ioc->bind(Compiler::class, PhpCompiler::class);
 
 $pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
