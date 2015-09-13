@@ -1,5 +1,6 @@
 <?php namespace BapCat\Remodel;
 
+use BapCat\Interfaces\Persist\Directory;
 use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
 use BapCat\Tailor\PersistTemplateFinder;
 
