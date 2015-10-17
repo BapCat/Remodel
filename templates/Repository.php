@@ -90,7 +90,7 @@ class <?= $name ?>Repository {
       $required[$col] = $this->ioc->make($type, [$raw[$col]]);
     }
     
-    $entity = $this->ioc->execute($className, 'fromRepository', array_merge($required, [function(<?= repoVirtualsToParams($virtual) ?>) use($raw) {
+    $entity = $this->ioc->call([$className, 'fromRepository'], array_merge($required, [function(<?= repoVirtualsToParams($virtual) ?>) use($raw) {
 <?php foreach($virtual as $def): ?>
       $<?= $def['alias'] ?> = $this->ioc->make(\<?= $def['type'] ?>::class, [$raw['<?= $def['alias'] ?>']]);
 <?php endforeach; ?>

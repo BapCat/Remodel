@@ -2,13 +2,9 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use BapCat\Interfaces\Values\Value;
 use BapCat\Phi\Phi;
 use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
 use BapCat\Remodel\RemodelTemplateFinder;
-use BapCat\Tailor\Tailor;
-use BapCat\Tailor\Compilers\Compiler;
-use BapCat\Tailor\Compilers\PhpCompiler;
 use Illuminate\Database\MySqlConnection;
 
 $ioc = Phi::instance();
