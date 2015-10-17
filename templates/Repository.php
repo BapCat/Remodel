@@ -116,6 +116,14 @@ class <?= $name ?>Repository {
       }
     }
     
+    foreach(self::$OPTIONAL as $alias => $type) {
+      $fields[$alias] = $entity->$alias;
+      
+      if($fields[$alias] !== null) {
+        $fields[$alias] = $fields[$alias]->raw;
+      }
+    }
+    
     $query = $this
       ->gateway
       ->query()

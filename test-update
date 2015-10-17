@@ -28,6 +28,7 @@ $registry->register($def);
 $gate = new UserGateway($connection);
 $repo = new UserRepository(Phi::instance(), $gate);
 
-$user = User::create(new Email('corey+inserttest@narwhunderful.com'));
+$user = $repo->first();
+$user->first_name = new Text('Not Corey');
 $repo->save($user);
 var_dump($user);
