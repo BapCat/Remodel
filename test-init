@@ -9,16 +9,34 @@ use Illuminate\Database\MySqlConnection;
 
 $ioc = Phi::instance();
 
-$ioc->bind(RemodelTemplateFinder::class, function() {
-  // Grab filesystem directories
-  $persist = new FilesystemDriver(__DIR__);
-  $compiled  = $persist->get('/cache');
-  
-  // TemplateFinders are able to find and use raw/compiled templates
-  return new RemodelTemplateFinder($compiled);
-});
+// Grab filesystem directories
+$persist = new FilesystemDriver(__DIR__);
+$cache   = $persist->get('/cache');
 
 $pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $connection = new MySqlConnection($pdo, 'test');
+
+use BapCat\Values\Email;
+use BapCat\Values\Text;
+
+use BapCat\Remodel\Registry;
+use BapCat\Remodel\EntityDefinition;
+use BapCat\CoolThing\User;
+use BapCat\CoolThing\UserGateway;
+use BapCat\CoolThing\UserRepository;
+
+$registry = $ioc->make(Registry::class, [$cache]);
+
+$def = new EntityDefinition(User::class);
+$def->required('email', Email::class);
+$def->optional('first_name', Text::class);
+$def->optional('last_name', Text::class);
+$def->virtual('full_email', Text::class, ['first_name', "' '", 'last_name', "' <'", 'email', "'>'"]);
+$def->virtual('full_name', Text::class, ['first_name', "' '", 'last_name']);
+
+$registry->register($def);
+
+$gate = new UserGateway($connection);
+$repo = new UserRepository(Phi::instance(), $gate);
