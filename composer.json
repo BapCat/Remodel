@@ -16,11 +16,11 @@
     "bapcat/interfaces": "dev-master as 1.1",
     "bapcat/tailor": "dev-master",
     "bapcat/propifier": "^1.0",
-    "bapcat/values": "dev-master as 0.1.1",
     "illuminate/database": "dev-master"
   },
   "require-dev": {
-    "bapcat/values": "dev-master",
+    "bapcat/hashing": "dev-master",
+    "bapcat/values": "dev-master as 0.1.1",
     "bapcat/phi": "^2.0"
   },
   "autoload": {
