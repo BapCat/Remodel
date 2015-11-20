@@ -2,6 +2,9 @@
 
 use BapCat\Propifier\PropifierTrait;
 
+use function BapCat\Remodel\pluralize;
+use function BapCat\Remodel\underscore;
+
 class EntityDefinition {
   use PropifierTrait;
   

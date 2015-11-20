@@ -3,15 +3,14 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use BapCat\Phi\Phi;
-use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
-use BapCat\Remodel\RemodelTemplateFinder;
+use BapCat\Persist\Drivers\Local\LocalDriver;
 use Illuminate\Database\MySqlConnection;
 
 $ioc = Phi::instance();
 
 // Grab filesystem directories
-$persist = new FilesystemDriver(__DIR__);
-$cache   = $persist->get('/cache');
+$persist = new LocalDriver(__DIR__);
+$cache   = $persist->getDirectory('/cache');
 
 $pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

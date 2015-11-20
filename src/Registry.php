@@ -1,51 +1,26 @@
 <?php namespace BapCat\Remodel;
 
 use BapCat\Interfaces\Ioc\Ioc;
-use BapCat\Interfaces\Persist\Directory;
-use BapCat\Tailor\Compilers\Compiler;
-use BapCat\Tailor\Compilers\NomPreprocessor;
+use BapCat\Hashing\Algorithms\Sha1WeakHasher;
+use BapCat\Nom\Compiler;
+use BapCat\Nom\NomPreprocessor;
+use BapCat\Persist\Directory;
+use BapCat\Persist\Drivers\Local\LocalDriver;
 use BapCat\Tailor\Tailor;
-use ICanBoogie\Inflector;
 
 class Registry {
-  private static $globalFunctionsRegistered = false;
-  
   private $tailor;
   
   public function __construct(Ioc $ioc, Directory $cache_dir) {
-    $finder       = $ioc->make(RemodelTemplateFinder::class, [$cache_dir]);
     $preprocessor = $ioc->make(NomPreprocessor::class);
     $compiler     = $ioc->make(Compiler::class);
     
-    $this->tailor = $ioc->make(Tailor::class, [$finder, $preprocessor, $compiler]);
+    $filesystem = new LocalDriver(__DIR__ . '/../templates');
+    $templates  = $filesystem->getDirectory('/');
     
-    if(!self::$globalFunctionsRegistered) {
-      self::$globalFunctionsRegistered = true;
-      
-      function titlize($input) {
-        return Inflector::get()->camelize($input);
-      }
-      
-      function camelize($input) {
-        return Inflector::get()->camelize($input, true);
-      }
-      
-      function underscore($input) {
-        return Inflector::get()->underscore($input);
-      }
-      
-      function pluralize($input) {
-        return Inflector::get()->pluralize($input);
-      }
-      
-      function singularize($input) {
-        return Inflector::get()->singularize($input);
-      }
-      
-      function humanize($input) {
-        return Inflector::get()->humanize($input);
-      }
-    }
+    $hasher = new Sha1WeakHasher();
+    
+    $this->tailor = $ioc->make(Tailor::class, [$templates, $cache_dir, $preprocessor, $compiler, $hasher]);
   }
   
   public function register(EntityDefinition $builder) {

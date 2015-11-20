@@ -1,10 +1,9 @@
 <?php
 
-use BapCat\Persist\Drivers\Filesystem\FilesystemDriver;
+use BapCat\Persist\Drivers\Local\LocalDriver;
 use BapCat\Phi\Phi;
 use BapCat\Remodel\EntityDefinition;
 use BapCat\Remodel\Registry;
-use BapCat\Remodel\RemodelTemplateFinder;
 
 use BapCat\Hashing\PasswordHash;
 use BapCat\Hashing\Algorithms\BcryptPasswordHasher;
@@ -21,8 +20,8 @@ use Test\UserRepository;
 
 class GatewayTest extends PHPUnit_Framework_TestCase {
   public function setUp() {
-    $persist = new FilesystemDriver(__DIR__);
-    $cache   = $persist->get('/cache');
+    $persist = new LocalDriver(__DIR__);
+    $cache   = $persist->getDirectory('/cache');
     
     $pdo = new PDO('sqlite::memory:');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
