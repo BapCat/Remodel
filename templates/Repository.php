@@ -2,7 +2,7 @@
 
 <?php
 
-/*use function BapCat\Remodel\titlize;*/
+use function BapCat\Remodel\camelize;
 
 if(!function_exists('repoVirtualToParam')) {
   function repoVirtualToParam(array $def) {
@@ -92,7 +92,9 @@ class <?= $name ?>Repository {
     
     $entity = $this->ioc->call([$className, 'fromRepository'], array_merge($required, [function(<?= repoVirtualsToParams($virtual) ?>) use($raw) {
 <?php foreach($virtual as $def): ?>
-      $<?= $def['alias'] ?> = $this->ioc->make(\<?= $def['type'] ?>::class, [$raw['<?= $def['alias'] ?>']]);
+      if($raw['<?= $def['alias'] ?>'] !== null) {
+        $<?= $def['alias'] ?> = $this->ioc->make(\<?= $def['type'] ?>::class, [$raw['<?= $def['alias'] ?>']]);
+      }
 <?php endforeach; ?>
     }]));
     
@@ -141,14 +143,14 @@ class <?= $name ?>Repository {
   }
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
-  public function with<?= \BapCat\Remodel\titlize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
+  public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
     $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
     return $this;
   }
 <?php endforeach; ?>
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
-  public function orderBy<?= \BapCat\Remodel\titlize($def->alias) ?>() {
+  public function orderBy<?= camelize($def->alias) ?>() {
     $this->order_bys[] = '<?= $def->alias ?>';
     return $this;
   }

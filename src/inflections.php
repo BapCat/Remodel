@@ -3,7 +3,7 @@
 use ICanBoogie\Inflector;
 
 function titlize($input) {
-  return Inflector::get()->camelize($input);
+  return Inflector::get()->titlize($input);
 }
 
 function camelize($input) {

@@ -72,48 +72,48 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   private ${! $def['alias'] !};
 @endeach
   
-  private @func(__construct)
+  private function __construct() { }
   
-  public static @func(create({! defsToParams($required) !}))
+  public static function create({! defsToParams($required) !}) {
     return self::make(null, {! defsToArgs($required) !});
-  @endfunc
+  }
   
-  public static @func(from({! defsToParams(array_merge([$id], $required)) !}))
+  public static function from({! defsToParams(array_merge([$id], $required)) !}) {
     return self::make({! defsToArgs(array_merge([$id], $required)) !});
-  @endfunc
+  }
   
-  public static @func(fromRepository({! defsToParams(array_merge([$id], $required)) !}, callable $accessor))
+  public static function fromRepository({! defsToParams(array_merge([$id], $required)) !}, callable $accessor) {
     $entity = static::from({! defsToArgs(array_merge([$id], $required)) !});
     $accessor({! virtualsToArgs($virtual) !});
     return $entity;
-  @endfunc
+  }
   
-  private static @func(make({! defsToParams(array_merge([$id], $required, $optional), true) !}))
+  private static function make({! defsToParams(array_merge([$id], $required, $optional), true) !}) {
     $entity = new \{! $namespace !}\{! $name !}();
 @each(array_merge([$id], $required, $optional) as $def)
     $entity->{! $def->alias !} = ${! $def->alias !};
 @endeach
     
     return $entity;
-  @endfunc
+  }
 @each(array_merge([$id], $required, $optional) as $def)
   
-  protected @func(get{! @titleize($def->alias) !})
+  protected function get{! @camelize($def->alias) !}() {
     return $this->{! $def->alias !};
-  @endfunc
+  }
   
-  protected @func(set{! @titleize($def->alias) !}({! defToParam($def) !}))
+  protected function set{! @camelize($def->alias) !}({! defToParam($def) !}) {
     $this->{! $def->alias !} = ${! $def->alias !};
-  @endfunc
+  }
 @endeach
 @each($virtual as $def)
   
-  protected @func(get{! @titleize($def['alias']) !})
+  protected function get{! @camelize($def['alias']) !}() {
     return $this->{! $def['alias'] !};
-  @endfunc
+  }
 @endeach
   
-  public @func(__toString)
+  public function __toString() {
     $output = '{! $namespace !}\{! $name !} ';
     
     if($this->id === null) {
@@ -121,9 +121,9 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     }
     
     return $output . $this->id;
-  @endfunc
+  }
   
-  public @func(jsonSerialize)
+  public function jsonSerialize() {
     return [
 @each(array_merge([$id], $required, $optional) as $def)
       '{! $def->alias !}' => $this->{! $def->alias !},
@@ -132,5 +132,5 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
       '{! $def['alias'] !}' => $this->{! $def['alias'] !},
 @endeach
     ];
-  @endfunc
+  }
 }
