@@ -21,12 +21,13 @@ class <?= $name ?>Gateway {
   
   public function __construct(ConnectionInterface $connection) {
     $this->connection = $connection;
+    $this->connection->setFetchMode(\PDO::FETCH_ASSOC);
   }
   
   public function query() {
     return new GatewayQuery(
-      $this,
-      $this->connection->table('<?= $table ?>'),
+      $this->connection,
+      '<?= $table ?>',
       static::$MAPPINGS,
       array_flip(static::$MAPPINGS),
       static::$VIRTUAL

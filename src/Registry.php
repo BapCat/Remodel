@@ -20,7 +20,8 @@ class Registry {
     
     $hasher = new Sha1WeakHasher();
     
-    $this->tailor = $ioc->make(Tailor::class, [$templates, $cache_dir, $preprocessor, $compiler, $hasher]);
+    $this->tailor = $ioc->make(Tailor::class, [$templates, $cache_dir, $compiler, $hasher]);
+    $this->tailor->addPreprocessor($preprocessor);
   }
   
   public function register(EntityDefinition $builder) {

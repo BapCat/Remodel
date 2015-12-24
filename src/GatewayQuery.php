@@ -1,83 +1,107 @@
 <?php namespace BapCat\Remodel;
 
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 
-class GatewayQuery {
-  private $gateway;
-  private $builder;
+class GatewayQuery extends Builder {
+  private $table;
   private $from_db;
   private $to_db;
   private $virtual;
   
-  public function __construct($gateway, Builder $builder, array $to_db, array $from_db, array $virtual) {
-    $this->gateway = $gateway;
-    $this->builder = $builder;
+  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $from_db, array $virtual) {
+    parent::__construct($connection, $connection->getQueryGrammar(), $connection->getPostProcessor());
+    $this->from($table);
+    
+    $this->table = $connection->getDoctrineSchemaManager()->listTableDetails($table);
+    
     $this->to_db   = $to_db;
     $this->from_db = $from_db;
     $this->virtual = $virtual;
   }
   
-  public function get() {
-    // Map explicit column names
-    if($this->builder->columns !== null) {
-      foreach($this->builder->columns as &$column) {
-        if(array_key_exists($column, $this->to_db)) {
-          $column = $this->to_db[$column];
-        } elseif(array_key_exists($column, $this->virtual)) {
-          $mapping = $this->virtual[$column];
-          
-          if(!is_array($mapping)) {
-            $column = $mapping;
-          } else {
-            $concat = 'CONCAT(';
-            
-            foreach($mapping as $part) {
-              $concat .= $part . ',';
-            }
-            
-            $concat = substr($concat, 0, strlen($concat) - 1) . ") AS $column";
-            $column = $this->builder->raw($concat);
-          }
-        }
-      }
+  public function get($columns = ['*']) {
+    if(!is_array($columns)) {
+      $columns = [$columns];
     }
     
-    // Map where column names
-    if($this->builder->wheres !== null) {
-      foreach($this->builder->wheres as &$where) {
-        if(array_key_exists($where['column'], $this->to_db)) {
-          $where['column'] = $this->to_db[$where['column']];
-        }
-      }
+    if($this->columns !== null) {
+      $this->columns = $this->remapColumns($this->columns);
     }
     
-    $rows = $this->builder->get();
+    $columns = $this->remapColumns($columns);
+    
+    $this->remapWheres();
+    
+    $rows = parent::get($columns);
     
     $mapped = [];
     
     foreach($rows as $row) {
-      $data = [];
-      
-      foreach($row as $col => $value) {
-        if(array_key_exists($col, $this->from_db)) {
-          $data[$this->from_db[$col]] = $value;
-        } else {
-          $data[$col] = $value;
-        }
-      }
-      
-      $mapped[] = $data;
+      $mapped[] = $this->coerceDataTypes($row);
     }
     
     return $mapped;
   }
   
-  public function insertGetId(array $data) {
-    return $this->builder->insertGetId($data);
+  private function remapColumns(array $columns) {
+    foreach($columns as &$column) {
+      if(array_key_exists($column, $this->to_db)) {
+        $column = $this->to_db[$column];
+      } elseif(array_key_exists($column, $this->virtual)) {
+        $mapping = $this->virtual[$column];
+        
+        if(!is_array($mapping)) {
+          $column = $mapping;
+        } else {
+          $concat = 'CONCAT(';
+          
+          foreach($mapping as $part) {
+            $concat .= $part . ',';
+          }
+          
+          $concat = substr($concat, 0, strlen($concat) - 1) . ") AS $column";
+          $column = $this->raw($concat);
+        }
+      }
+    }
+    
+    return $columns;
   }
   
-  public function __call($name, array $args) {
-    $this->builder = call_user_func_array([$this->builder, $name], $args);
-    return $this;
+  private function remapWheres() {
+    if($this->wheres !== null) {
+      foreach($this->wheres as &$where) {
+        if(array_key_exists($where['column'], $this->to_db)) {
+          $where['column'] = $this->to_db[$where['column']];
+        }
+      }
+    }
+  }
+  
+  private function coerceDataTypes(array $row) {
+    $mapped = [];
+    
+    foreach($row as $col => $value) {
+      switch($this->table->getColumn($col)->getType()->getName()) {
+        case 'integer':
+          $value = (int)$value;
+        break;
+        
+        case 'timestamp':
+        case 'datetime':
+          $value = strtotime($value);
+        break;
+      }
+      
+      if(array_key_exists($col, $this->from_db)) {
+        $mapped[$this->from_db[$col]] = $value;
+      } else {
+        $mapped[$col] = $value;
+      }
+    }
+    
+    return $mapped;
   }
 }

@@ -55,6 +55,14 @@ class <?= $name ?>Repository {
 <?php endforeach; ?>
   ];
   
+  private static $READ_ONLY = [
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+<?php if($def->read_only): ?>
+    '<?= $def->alias ?>',
+<?php endif; ?>
+<?php endforeach; ?>
+  ];
+  
   public function __construct(\BapCat\Interfaces\Ioc\Ioc $ioc, \<?= $namespace ?>\<?= $name ?>Gateway $gateway) {
     $this->ioc     = $ioc;
     $this->entity  = \<?= $namespace ?>\<?= $name ?>::class;
@@ -111,18 +119,22 @@ class <?= $name ?>Repository {
     $fields = [];
     
     foreach(self::$REQUIRED as $alias => $type) {
-      $fields[$alias] = $entity->$alias;
-      
-      if($fields[$alias] !== null) {
-        $fields[$alias] = $fields[$alias]->raw;
+      if(!in_array($alias, static::$READ_ONLY)) {
+        $fields[$alias] = $entity->$alias;
+        
+        if($fields[$alias] !== null) {
+          $fields[$alias] = $fields[$alias]->raw;
+        }
       }
     }
     
     foreach(self::$OPTIONAL as $alias => $type) {
-      $fields[$alias] = $entity->$alias;
-      
-      if($fields[$alias] !== null) {
-        $fields[$alias] = $fields[$alias]->raw;
+      if(!in_array($alias, static::$READ_ONLY)) {
+        $fields[$alias] = $entity->$alias;
+        
+        if($fields[$alias] !== null) {
+          $fields[$alias] = $fields[$alias]->raw;
+        }
       }
     }
     

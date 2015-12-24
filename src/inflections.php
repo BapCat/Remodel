@@ -2,12 +2,12 @@
 
 use ICanBoogie\Inflector;
 
-function titlize($input) {
-  return Inflector::get()->titlize($input);
+function titleize($input) {
+  return Inflector::get()->titleize($input);
 }
 
-function camelize($input) {
-  return Inflector::get()->camelize($input, true);
+function camelize($input, $lowercase_first = false) {
+  return Inflector::get()->camelize($input, $lowercase_first ? Inflector::DOWNCASE_FIRST_LETTER : Inflector::UPCASE_FIRST_LETTER);
 }
 
 function underscore($input) {

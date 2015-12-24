@@ -5,6 +5,7 @@
 require __DIR__ . '/test-init';
 
 use BapCat\Values\Email;
+use BapCat\Values\Password;
 
 use BapCat\CoolThing\User;
 use BapCat\CoolThing\UserId;
@@ -12,14 +13,14 @@ use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 use BapCat\CoolThing\UserNotFoundException;
 
-$user = User::create(new Email('corey@narwhunderful.com'));
+$user = User::create(new Email('corey@narwhunderful.com'), new Password('password'));
 echo $user;
 echo "\n\n";
 echo json_encode($user);
 echo "\n\n";
 
 echo json_encode($gate->query()
-  ->select('id', 'email', 'full_email', 'first_name', 'last_name', 'full_name')
+  ->select('id', 'email', 'password', 'name', 'created_at', 'updated_at')
   ->get()
 );
 

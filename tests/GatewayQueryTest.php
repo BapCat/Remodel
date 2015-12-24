@@ -1,34 +1,22 @@
 <?php
 
-use BapCat\Persist\Drivers\Local\LocalDriver;
-use BapCat\Phi\Phi;
-use BapCat\Remodel\EntityDefinition;
-use BapCat\Remodel\Registry;
+use BapCat\Remodel\GatewayQuery;
 
 use BapCat\Hashing\PasswordHash;
 use BapCat\Hashing\Algorithms\BcryptPasswordHasher;
-use BapCat\Values\Email;
-use BapCat\Values\Password;
-use BapCat\Values\Text;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\SQLiteConnection;
 
-use Test\User;
-use Test\UserGateway;
-use Test\UserRepository;
-
-class GatewayTest extends PHPUnit_Framework_TestCase {
+class GatewayQueryTest extends PHPUnit_Framework_TestCase {
+  private $query;
+  
   public function setUp() {
-    $persist = new LocalDriver(__DIR__);
-    $cache   = $persist->getDirectory('/cache');
-    
     $pdo = new PDO('sqlite::memory:');
-    //$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     $connection = new SQLiteConnection($pdo);
-    //$connection = new Illuminate\Database\MysqlConnection($pdo);
+    $connection->setFetchMode(PDO::FETCH_ASSOC);
     
     $connection->getSchemaBuilder()->create('users', function(Blueprint $table) use($connection) {
       $table->increments('id');
@@ -50,21 +38,16 @@ class GatewayTest extends PHPUnit_Framework_TestCase {
       'password' => password_hash('password', PASSWORD_DEFAULT),
     ]);
     
-    $registry = new Registry(Phi::instance(), $cache);
+    $mappings = [
+      'user_name' => 'name',
+    ];
     
-    $def = new EntityDefinition(User::class);
-    $def->required('email',    Email::class);
-    $def->required('password', PasswordHash::class);
-    $def->optional('name',     Text::class);
-    $def->timestamps();
-    
-    $registry->register($def);
-    
-    $this->gateway = new UserGateway($connection);
+    $this->query  = new GatewayQuery($connection, 'users', [], [], []);
+    $this->mapped = new GatewayQuery($connection, 'users', $mappings, array_flip($mappings), []);
   }
   
-  public function testGet() {
-    list($user1, $user2) = $this->gateway->query()->get();
+  public function testGetSimple() {
+    list($user1, $user2) = $this->query->get();
     
     $this->assertSame('test+name@bapcat.com', $user1['email']);
     $this->assertTrue(password_verify('password', $user1['password']));
@@ -73,5 +56,27 @@ class GatewayTest extends PHPUnit_Framework_TestCase {
     $this->assertSame('test+no-name@bapcat.com', $user2['email']);
     $this->assertTrue(password_verify('password', $user2['password']));
     $this->assertNull($user2['name']);
+  }
+  
+  public function testGetSimpleWithWhere() {
+    $user = $this->query->whereNotNull('name')->get();
+    
+    $this->assertCount(1, $user);
+    $this->assertSame('test+name@bapcat.com', $user[0]['email']);
+  }
+  
+  public function testGetMapped() {
+    list($user1, $user2) = $this->mapped->get('user_name');
+    
+    $this->assertSame('I Have a Name', $user1['user_name']);
+    
+    $this->assertNull($user2['user_name']);
+  }
+  
+  public function testGetMappedWithWhere() {
+    $user = $this->mapped->whereNotNull('user_name')->get('user_name');
+    
+    $this->assertCount(1, $user);
+    $this->assertSame('I Have a Name', $user[0]['user_name']);
   }
 }

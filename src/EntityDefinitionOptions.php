@@ -8,6 +8,7 @@ class EntityDefinitionOptions {
   private $alias;
   private $type;
   private $raw;
+  private $read_only = false;
   
   private $referenced_entity;
   private $referenced_field;
@@ -20,6 +21,11 @@ class EntityDefinitionOptions {
   
   public function mapsTo($raw) {
     $this->raw = $raw;
+    return $this;
+  }
+  
+  public function readOnly() {
+    $this->read_only = true;
     return $this;
   }
   
@@ -39,6 +45,10 @@ class EntityDefinitionOptions {
   
   protected function getRaw() {
     return $this->raw;
+  }
+  
+  protected function getReadOnly() {
+    return $this->read_only;
   }
   
   protected function getReferencedEntity() {

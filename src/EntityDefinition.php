@@ -1,6 +1,7 @@
 <?php namespace BapCat\Remodel;
 
 use BapCat\Propifier\PropifierTrait;
+use BapCat\Values\Timestamp;
 
 use function BapCat\Remodel\pluralize;
 use function BapCat\Remodel\underscore;
@@ -45,6 +46,11 @@ class EntityDefinition {
   
   public function virtual($alias, $type, $raw) {
     $this->virtual[] = ['raw' => $raw, 'alias' => $alias, 'type' => $type];
+  }
+  
+  public function timestamps() {
+    $this->optional('created_at', Timestamp::class)->readOnly();
+    $this->optional('updated_at', Timestamp::class)->readOnly();
   }
   
   protected function getFullname() {
