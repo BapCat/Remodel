@@ -36,13 +36,35 @@ class GatewayQuery extends Builder {
     
     $rows = parent::get($columns);
     
-    $mapped = [];
-    
-    foreach($rows as $row) {
-      $mapped[] = $this->coerceDataTypesFromDatabase($row);
+    if($this->aggregate === null) {
+      $mapped = [];
+      
+      foreach($rows as $row) {
+        $mapped[] = $this->coerceDataTypesFromDatabase($row);
+      }
+      
+      return $mapped;
+    } else {
+      return $rows;
+    }
+  }
+  
+  public function aggregate($function, $columns = ['*']) {
+    if(!is_array($columns)) {
+      $columns = [$columns];
     }
     
-    return $mapped;
+    if($this->columns !== null) {
+      $this->columns = $this->remapColumns($this->columns);
+    }
+    
+    $columns = $this->remapColumns($columns);
+    
+    $this->remapWheres();
+    
+    $value = parent::aggregate($function, $columns);
+    
+    return filter_var($value, FILTER_VALIDATE_INT) ? (int)$value : (float)$value;
   }
   
   public function update(array $values) {

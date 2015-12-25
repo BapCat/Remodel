@@ -23,6 +23,7 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       $table->string('email', 254)->unique();
       $table->string('password', 255);
       $table->string('name', 100)->nullable();
+      $table->integer('age');
       $table->timestamp('created_at')->default($connection->raw('CURRENT_TIMESTAMP'));
       $table->timestamp('updated_at')->default($connection->raw('CURRENT_TIMESTAMP'));
     });
@@ -30,16 +31,25 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $connection->table('users')->insert([
       'email'    => 'test+name@bapcat.com',
       'password' => password_hash('password', PASSWORD_DEFAULT),
-      'name'     => 'I Have a Name'
+      'name'     => 'I Have a Name',
+      'age'      => 1
     ]);
     
     $connection->table('users')->insert([
       'email'    => 'test+no-name@bapcat.com',
       'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 2
+    ]);
+    
+    $connection->table('users')->insert([
+      'email'    => 'test+no-name-2@bapcat.com',
+      'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 3
     ]);
     
     $mappings = [
       'user_name' => 'name',
+      'user_age'  => 'age'
     ];
     
     $this->query  = new GatewayQuery($connection, 'users', [], [], []);
@@ -135,7 +145,8 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     
     $this->query->insert([
       'email'    => $email,
-      'password' => password_hash('password', PASSWORD_DEFAULT)
+      'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 4
     ]);
     
     $user = $this->query->where('email', $email)->first();
@@ -149,11 +160,72 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->mapped->insert([
       'email'     => 'test+insertmapped@bapcat.com',
       'password'  => password_hash('password', PASSWORD_DEFAULT),
-      'user_name' => $name
+      'user_name' => $name,
+      'age'       => 5
     ]);
     
     $user = $this->mapped->where('user_name', $name)->first();
     
     $this->assertSame($name, $user['user_name']);
+  }
+  
+  public function testCount() {
+    $count = $this->query->whereNull('name')->count();
+    
+    $this->assertSame(2, $count);
+  }
+  
+  public function testCountMapped() {
+    $count = $this->mapped->whereNull('user_name')->count();
+    
+    $this->assertSame(2, $count);
+  }
+  
+  public function testMin() {
+    $min = $this->query->min('age');
+    
+    $this->assertSame(1, $min);
+  }
+  
+  public function testMinMapped() {
+    $min = $this->mapped->min('user_age');
+    
+    $this->assertSame(1, $min);
+  }
+  
+  public function testMax() {
+    $max = $this->query->max('age');
+    
+    $this->assertSame(3, $max);
+  }
+  
+  public function testMaxMapped() {
+    $max = $this->mapped->max('user_age');
+    
+    $this->assertSame(3, $max);
+  }
+  
+  public function testSum() {
+    $sum = $this->query->sum('age');
+    
+    $this->assertSame(6, $sum);
+  }
+  
+  public function testSumMapped() {
+    $sum = $this->mapped->sum('user_age');
+    
+    $this->assertSame(6, $sum);
+  }
+  
+  public function testAvg() {
+    $avg = $this->query->avg('age');
+    
+    $this->assertSame(2.0, $avg);
+  }
+  
+  public function testAvgMapped() {
+    $avg = $this->mapped->avg('user_age');
+    
+    $this->assertSame(2.0, $avg);
   }
 }
