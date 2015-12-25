@@ -56,6 +56,17 @@ class GatewayQuery extends Builder {
     return parent::update($values);
   }
   
+  public function insert(array $values) {
+    //@TODO: Is this fast enough?
+    $values = array_combine($this->remapColumns(array_keys($values)), array_values($values));
+    
+    $this->remapWheres();
+    
+    $values = $this->coerceDataTypesToDatabase($values);
+    
+    return parent::insert($values);
+  }
+  
   private function remapColumns(array $columns) {
     foreach($columns as &$column) {
       if(array_key_exists($column, $this->to_db)) {

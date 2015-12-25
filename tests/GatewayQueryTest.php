@@ -129,4 +129,31 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     
     $this->assertSame(100, $user['updated_at']);
   }
+  
+  public function testInsert() {
+    $email = 'test+insert@bapcat.com';
+    
+    $this->query->insert([
+      'email'    => $email,
+      'password' => password_hash('password', PASSWORD_DEFAULT)
+    ]);
+    
+    $user = $this->query->where('email', $email)->first();
+    
+    $this->assertSame($email, $user['email']);
+  }
+  
+  public function testInsertMapped() {
+    $name = 'My Name';
+    
+    $this->mapped->insert([
+      'email'     => 'test+insertmapped@bapcat.com',
+      'password'  => password_hash('password', PASSWORD_DEFAULT),
+      'user_name' => $name
+    ]);
+    
+    $user = $this->mapped->where('user_name', $name)->first();
+    
+    $this->assertSame($name, $user['user_name']);
+  }
 }
