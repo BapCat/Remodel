@@ -121,4 +121,12 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     
     $this->assertSame('Test', $user['user_name']);
   }
+  
+  public function testUpdateTimestamp() {
+    $this->query->where('id', 1)->update(['updated_at' => 100]);
+    
+    $user = $this->query->where('id', 1)->first();
+    
+    $this->assertSame(100, $user['updated_at']);
+  }
 }

@@ -39,7 +39,7 @@ class GatewayQuery extends Builder {
     $mapped = [];
     
     foreach($rows as $row) {
-      $mapped[] = $this->coerceDataTypes($row);
+      $mapped[] = $this->coerceDataTypesFromDatabase($row);
     }
     
     return $mapped;
@@ -50,6 +50,8 @@ class GatewayQuery extends Builder {
     $values = array_combine($this->remapColumns(array_keys($values)), array_values($values));
     
     $this->remapWheres();
+    
+    $values = $this->coerceDataTypesToDatabase($values);
     
     return parent::update($values);
   }
@@ -89,7 +91,7 @@ class GatewayQuery extends Builder {
     }
   }
   
-  private function coerceDataTypes(array $row) {
+  private function coerceDataTypesFromDatabase(array $row) {
     $mapped = [];
     
     foreach($row as $col => $value) {
@@ -109,6 +111,23 @@ class GatewayQuery extends Builder {
       } else {
         $mapped[$col] = $value;
       }
+    }
+    
+    return $mapped;
+  }
+  
+  private function coerceDataTypesToDatabase(array $row) {
+    $mapped = [];
+    
+    foreach($row as $col => $value) {
+      switch($this->table->getColumn($col)->getType()->getName()) {
+        case 'timestamp':
+        case 'datetime':
+          $value = date('c', $value);
+        break;
+      }
+      
+      $mapped[$col] = $value;
     }
     
     return $mapped;
