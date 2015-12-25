@@ -45,6 +45,15 @@ class GatewayQuery extends Builder {
     return $mapped;
   }
   
+  public function update(array $values) {
+    //@TODO: Is this fast enough?
+    $values = array_combine($this->remapColumns(array_keys($values)), array_values($values));
+    
+    $this->remapWheres();
+    
+    return parent::update($values);
+  }
+  
   private function remapColumns(array $columns) {
     foreach($columns as &$column) {
       if(array_key_exists($column, $this->to_db)) {

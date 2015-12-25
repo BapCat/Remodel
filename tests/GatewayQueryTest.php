@@ -73,10 +73,52 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->assertNull($user2['user_name']);
   }
   
+  public function testGetIntIsInt() {
+    $user = $this->query->first();
+    
+    $this->assertInternalType('int', $user['id']);
+  }
+  
+  public function testGetTimestampIsInt() {
+    $user = $this->query->first();
+    
+    $this->assertInternalType('int', $user['created_at']);
+  }
+  
   public function testGetMappedWithWhere() {
     $user = $this->mapped->whereNotNull('user_name')->get('user_name');
     
     $this->assertCount(1, $user);
     $this->assertSame('I Have a Name', $user[0]['user_name']);
+  }
+  
+  public function testSelectGet() {
+    $user = $this->query->select('name')->first();
+    
+    $this->assertCount(1, $user);
+    $this->assertSame('I Have a Name', $user['name']);
+  }
+  
+  public function testSelectGetMapped() {
+    $user = $this->mapped->select('user_name')->first();
+    
+    $this->assertCount(1, $user);
+    $this->assertSame('I Have a Name', $user['user_name']);
+  }
+  
+  public function testUpdate() {
+    $this->query->where('id', 1)->update(['name' => 'Test']);
+    
+    $user = $this->query->select('name')->where('id', 1)->first();
+    
+    $this->assertSame('Test', $user['name']);
+  }
+  
+  public function testUpdateMapped() {
+    $this->mapped->where('id', 1)->update(['user_name' => 'Test']);
+    
+    $user = $this->mapped->select('user_name')->where('id', 1)->first();
+    
+    $this->assertSame('Test', $user['user_name']);
   }
 }
