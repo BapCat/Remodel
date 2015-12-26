@@ -10,6 +10,8 @@ use Illuminate\Database\SQLiteConnection;
 
 class GatewayQueryTest extends PHPUnit_Framework_TestCase {
   private $query;
+  private $mapped;
+  private $mapped_id;
   
   public function setUp() {
     $pdo = new PDO('sqlite::memory:');
@@ -52,8 +54,28 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'user_age'  => 'age'
     ];
     
-    $this->query  = new GatewayQuery($connection, 'users', [], [], []);
-    $this->mapped = new GatewayQuery($connection, 'users', $mappings, array_flip($mappings), []);
+    $mapped_id = [
+      'user_id' => 'id'
+    ];
+    
+    $this->query     = new GatewayQuery($connection, 'users', [], [], []);
+    $this->mapped    = new GatewayQuery($connection, 'users', $mappings, array_flip($mappings), []);
+    $this->mapped_id = new GatewayQuery($connection, 'users', $mapped_id, array_flip($mapped_id), []);
+  }
+  
+  public function testFind() {
+    $user = $this->query->find(1);
+    $this->assertSame('test+name@bapcat.com', $user['email']);
+  }
+  
+  public function testFindMapped() {
+    $user = $this->mapped->find(1);
+    $this->assertSame('I Have a Name', $user['user_name']);
+  }
+  
+  public function testFindMappedId() {
+    $user = $this->mapped_id->find(1);
+    $this->assertSame(1, $user['user_id']);
   }
   
   public function testGetSimple() {
@@ -227,5 +249,29 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $avg = $this->mapped->avg('user_age');
     
     $this->assertSame(2.0, $avg);
+  }
+  
+  public function testDelete() {
+    $result = $this->query->where('id', 1)->delete();
+    
+    $this->assertSame(1, $result);
+  }
+  
+  public function testDeleteImplicitId() {
+    $result = $this->query->delete(1);
+    
+    $this->assertSame(1, $result);
+  }
+  
+  public function testDeleteMappedId() {
+    $result = $this->mapped_id->where('user_id', 1)->delete();
+    
+    $this->assertSame(1, $result);
+  }
+  
+  public function testDeleteImplicitMappedId() {
+    $result = $this->mapped_id->delete(1);
+    
+    $this->assertSame(1, $result);
   }
 }

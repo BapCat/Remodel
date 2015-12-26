@@ -89,6 +89,12 @@ class GatewayQuery extends Builder {
     return parent::insert($values);
   }
   
+  public function delete($id = null) {
+    $this->remapWheres();
+    
+    return parent::delete($id);
+  }
+  
   private function remapColumns(array $columns) {
     foreach($columns as &$column) {
       if(array_key_exists($column, $this->to_db)) {
