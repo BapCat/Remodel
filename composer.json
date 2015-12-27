@@ -15,6 +15,7 @@
     "bapcat/interfaces": "^1.1",
     "bapcat/hashing": "^0.2.3",
     "bapcat/nom": "^0.3",
+    "bapcat/persist": "^0.2",
     "bapcat/tailor": "^0.2",
     "bapcat/propifier": "^1.0",
     "illuminate/database": "^5.0",
