@@ -84,8 +84,6 @@ class <?= $name ?>Repository {
       $query = $query->orderBy($order_by);
     }
     
-    $scopes = [];
-    
     return $query;
   }
   
@@ -181,6 +179,10 @@ class <?= $name ?>Repository {
     }
     
     $raw = $raw->get();
+    
+    $this->scopes    = [];
+    $this->order_bys = [];
+    $this->limit     = 0;
     
     $entities = [];
     
