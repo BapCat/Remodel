@@ -69,6 +69,12 @@ class <?= $name ?>Repository {
     $this->gateway = $gateway;
   }
   
+  public function reset() {
+    $this->scopes    = [];
+    $this->order_bys = [];
+    $this->limit     = 0;
+  }
+  
   private function buildQuery() {
     $query = $this
       ->gateway
@@ -151,6 +157,21 @@ class <?= $name ?>Repository {
       ;
     }
   }
+  
+  public function delete() {
+    $query = $this
+      ->gateway
+      ->query()
+    ;
+    
+    foreach($this->scopes as $col => $value) {
+      $query = $query->where($col, $value);
+    }
+    
+    $query->delete();
+    
+    $this->reset();
+  }
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
   public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
@@ -180,9 +201,7 @@ class <?= $name ?>Repository {
     
     $raw = $raw->get();
     
-    $this->scopes    = [];
-    $this->order_bys = [];
-    $this->limit     = 0;
+    $this->reset();
     
     $entities = [];
     

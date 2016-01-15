@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+
+<?php
+
+require __DIR__ . '/test-init';
+
+use BapCat\Values\Text;
+
+use BapCat\CoolThing\User;
+use BapCat\CoolThing\UserGateway;
+use BapCat\CoolThing\UserRepository;
+
+$user = $repo->first();
+$repo->withId($user->id)->delete();
