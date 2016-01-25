@@ -49,6 +49,16 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'age'      => 3
     ]);
     
+    $no_mapping = [
+        'id' => 'id',
+        'email' => 'email',
+        'password' => 'password',
+        'name' => 'name',
+        'age' => 'age',
+        'created_at' => 'created_at',
+        'updated_at' => 'updated_at'
+    ];
+    
     $mappings = [
       'user_name' => 'name',
       'user_age'  => 'age'
@@ -58,7 +68,7 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'user_id' => 'id'
     ];
     
-    $this->query     = new GatewayQuery($connection, 'users', [], [], []);
+    $this->query     = new GatewayQuery($connection, 'users', $no_mapping, array_flip($no_mapping), []);
     $this->mapped    = new GatewayQuery($connection, 'users', $mappings, array_flip($mappings), []);
     $this->mapped_id = new GatewayQuery($connection, 'users', $mapped_id, array_flip($mapped_id), []);
   }
