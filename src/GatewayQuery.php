@@ -134,18 +134,18 @@ class GatewayQuery extends Builder {
     $mapped = [];
     
     foreach($row as $col => $value) {
-      switch($this->table->getColumn($col)->getType()->getName()) {
-        case 'integer':
-          $value = (int)$value;
-        break;
-        
-        case 'timestamp':
-        case 'datetime':
-          $value = strtotime($value);
-        break;
-      }
-      
       if(array_key_exists($col, $this->from_db)) {
+        switch($this->table->getColumn($col)->getType()->getName()) {
+          case 'integer':
+            $value = (int)$value;
+          break;
+          
+          case 'timestamp':
+          case 'datetime':
+            $value = strtotime($value);
+          break;
+        }
+        
         $mapped[$this->from_db[$col]] = $value;
       } else {
         $mapped[$col] = $value;
