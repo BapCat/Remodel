@@ -32,7 +32,8 @@ class Registry {
       'id'        => $builder->id,
       'required'  => $builder->required,
       'optional'  => $builder->optional,
-      'virtual'   => $builder->virtual
+      'virtual'   => $builder->virtual,
+      'has_many'  => $builder->has_many
     ];
     
     $this->tailor->bind($builder->fullname, 'Entity', $options);

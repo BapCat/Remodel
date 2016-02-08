@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+
+<?php
+
+require __DIR__ . '/test-init';
+
+use BapCat\CoolThing\User;
+
+$user = $repo->first();
+
+var_dump($user->posts);

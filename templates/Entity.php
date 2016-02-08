@@ -65,6 +65,10 @@ if(!function_exists('defToParam')) {
 class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   use \BapCat\Propifier\PropifierTrait;
   
+  const ID_NAME = '{! $id->alias !}';
+  
+  private $ioc;
+  
 @each(array_merge([$id], $required, $optional) as $def)
   private ${! $def->alias !};
 @endeach
@@ -72,7 +76,9 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   private ${! $def['alias'] !};
 @endeach
   
-  private function __construct() { }
+  private function __construct() {
+    $this->ioc = \BapCat\Interfaces\Ioc\Ioc::instance();
+  }
   
   public static function create({! defsToParams($required) !}) {
     return self::make(null, {! defsToArgs($required) !});
@@ -110,6 +116,22 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
   protected function get{! @camelize($def['alias']) !}() {
     return $this->{! $def['alias'] !};
+  }
+@endeach
+@each($has_many as $relation)
+  
+  protected function get{! @pluralize($relation->foreign_entity_short) !}() {
+    $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
+    
+    <?php
+      $foreign_key = $relation->foreign_key;
+      
+      if(!isset($foreign_key)) {
+        $foreign_key = @underscore($name . 'Id');
+      }
+    ?>
+    
+    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $id->alias !})->get();
   }
 @endeach
   
