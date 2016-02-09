@@ -8,6 +8,6 @@ use BapCat\CoolThing\User;
 
 $user = $repo->first();
 
-var_dump($user->posts);
-
-var_dump($user->posts[0]->user);
+echo json_encode($user->posts);
+echo "\n";
+echo json_encode($user->posts[0]->creator);

@@ -57,12 +57,12 @@ class EntityDefinition {
     $this->optional('updated_at', Timestamp::class)->readOnly();
   }
   
-  public function hasMany($entity) {
-    return $this->has_many[] = new Relation($this->fullname, $entity);
+  public function hasMany($alias, $entity) {
+    return $this->has_many[] = new Relation($alias, $this->fullname, $entity);
   }
   
-  public function belongsTo($entity) {
-    return $this->belongs_to[] = new Relation($this->fullname, $entity);
+  public function belongsTo($alias, $entity) {
+    return $this->belongs_to[] = new Relation($alias, $this->fullname, $entity);
   }
   
   protected function getFullname() {

@@ -39,15 +39,15 @@ $def->required('email', Email::class);
 $def->required('password', Password::class);
 $def->optional('name', Text::class);
 $def->timestamps();
-$def->hasMany(Post::class);
+$def->hasMany('posts', Post::class)->foreignKey('creator_id');
 
 $registry->register($def);
 
 $def = new EntityDefinition(Post::class);
-$def->required('user_id', UserId::class);
+$def->required('creator_id', UserId::class);
 $def->required('text', Text::class);
 $def->timestamps();
-$def->belongsTo(User::class);
+$def->belongsTo('creator', User::class);
 
 $registry->register($def);
 

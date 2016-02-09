@@ -120,18 +120,18 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
 @endeach
 @each($has_many as $relation)
   
-  protected function get{! @pluralize(\BapCat\Remodel\short($relation->foreign_entity)) !}() {
+  protected function get{! @camelize($relation->alias) !}() {
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
-    <?php $foreign_key = $relation->foreign_key ?: @underscore($name . 'Id'); ?>
+    <?php $foreign_key = $relation->foreign_key ?: @underscore($name) . '_id'; ?>
     return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $id->alias !})->get();
   }
 @endeach
 @each($belongs_to as $relation)
   
-  protected function get{! \BapCat\Remodel\short($relation->foreign_entity) !}() {
+  protected function get{! @camelize($relation->alias) !}() {
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
     <?php $foreign_key = $relation->foreign_key ?: $relation->foreign_entity::ID_NAME; ?>
-    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: @underscore(\BapCat\Remodel\short($relation->foreign_entity) . 'Id') !})->first();
+    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $relation->alias . '_id' !})->first();
   }
 @endeach
   
