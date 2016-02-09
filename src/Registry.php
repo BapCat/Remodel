@@ -26,14 +26,15 @@ class Registry {
   
   public function register(EntityDefinition $builder) {
     $options = [
-      'namespace' => $builder->namespace,
-      'name'      => $builder->name,
-      'table'     => $builder->table,
-      'id'        => $builder->id,
-      'required'  => $builder->required,
-      'optional'  => $builder->optional,
-      'virtual'   => $builder->virtual,
-      'has_many'  => $builder->has_many
+      'namespace'  => $builder->namespace,
+      'name'       => $builder->name,
+      'table'      => $builder->table,
+      'id'         => $builder->id,
+      'required'   => $builder->required,
+      'optional'   => $builder->optional,
+      'virtual'    => $builder->virtual,
+      'has_many'   => $builder->has_many,
+      'belongs_to' => $builder->belongs_to
     ];
     
     $this->tailor->bind($builder->fullname, 'Entity', $options);

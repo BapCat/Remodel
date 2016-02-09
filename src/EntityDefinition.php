@@ -1,6 +1,6 @@
 <?php namespace BapCat\Remodel;
 
-use BapCat\Remodel\Relations\HasMany;
+use BapCat\Remodel\Relations\Relation;
 
 use BapCat\Propifier\PropifierTrait;
 use BapCat\Values\Timestamp;
@@ -20,6 +20,7 @@ class EntityDefinition {
   private $optional = [];
   private $virtual = [];
   private $has_many = [];
+  private $belongs_to = [];
   
   public function __construct($name) {
     $split = explode('\\', $name);
@@ -57,7 +58,11 @@ class EntityDefinition {
   }
   
   public function hasMany($entity) {
-    return $this->has_many[] = new HasMany($this->fullname, $entity);
+    return $this->has_many[] = new Relation($this->fullname, $entity);
+  }
+  
+  public function belongsTo($entity) {
+    return $this->belongs_to[] = new Relation($this->fullname, $entity);
   }
   
   protected function getFullname() {
@@ -94,5 +99,9 @@ class EntityDefinition {
   
   protected function getHasMany() {
     return $this->has_many;
+  }
+  
+  protected function getBelongsTo() {
+    return $this->belongs_to;
   }
 }

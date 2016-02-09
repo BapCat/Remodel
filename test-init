@@ -47,6 +47,7 @@ $def = new EntityDefinition(Post::class);
 $def->required('user_id', UserId::class);
 $def->required('text', Text::class);
 $def->timestamps();
+$def->belongsTo(User::class);
 
 $registry->register($def);
 

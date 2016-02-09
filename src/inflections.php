@@ -25,3 +25,8 @@ function singularize($input) {
 function humanize($input) {
   return Inflector::get()->humanize($input);
 }
+
+function short($class_name) {
+  $parts = explode('\\', $class_name);
+  return array_pop($parts);
+}

@@ -9,3 +9,5 @@ use BapCat\CoolThing\User;
 $user = $repo->first();
 
 var_dump($user->posts);
+
+var_dump($user->posts[0]->user);

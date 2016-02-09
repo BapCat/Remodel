@@ -2,24 +2,17 @@
 
 use BapCat\Propifier\PropifierTrait;
 
-use function BapCat\Remodel\underscore;
-use function BapCat\Remodel\pluralize;
-
-class HasMany {
+class Relation {
   use PropifierTrait;
   
   private $local_entity;
   private $local_key;
   private $foreign_entity;
-  private $foreign_entity_short;
   private $foreign_key;
   
   public function __construct($local_entity, $foreign_entity) {
     $this->local_entity   = $local_entity;
     $this->foreign_entity = $foreign_entity;
-    
-    $parts = explode('\\', $foreign_entity);
-    $this->foreign_entity_short = array_pop($parts);
   }
   
   public function localKey($key) {
