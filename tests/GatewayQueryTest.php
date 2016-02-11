@@ -1,49 +1,47 @@
 <?php
 
 use BapCat\Remodel\GatewayQuery;
+use BapCat\Remodel\RemodelTestTrait;
 
 use BapCat\Hashing\PasswordHash;
 use BapCat\Hashing\Algorithms\BcryptPasswordHasher;
 
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\SQLiteConnection;
 
 class GatewayQueryTest extends PHPUnit_Framework_TestCase {
+  use RemodelTestTrait;
+  
   private $query;
   private $mapped;
   private $mapped_id;
   
   public function setUp() {
-    $pdo = new PDO('sqlite::memory:');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $this->setUpRemodel();
     
-    $connection = new SQLiteConnection($pdo);
-    $connection->setFetchMode(PDO::FETCH_ASSOC);
-    
-    $connection->getSchemaBuilder()->create('users', function(Blueprint $table) use($connection) {
+    $this->createTable('users', function(Blueprint $table) {
       $table->increments('id');
       $table->string('email', 254)->unique();
       $table->string('password', 255);
       $table->string('name', 100)->nullable();
       $table->integer('age');
-      $table->timestamp('created_at')->default($connection->raw('CURRENT_TIMESTAMP'));
-      $table->timestamp('updated_at')->default($connection->raw('CURRENT_TIMESTAMP'));
+      $table->timestamp('created_at')->default($this->connection->raw('CURRENT_TIMESTAMP'));
+      $table->timestamp('updated_at')->default($this->connection->raw('CURRENT_TIMESTAMP'));
     });
     
-    $connection->table('users')->insert([
+    $this->table('users')->insert([
       'email'    => 'test+name@bapcat.com',
       'password' => password_hash('password', PASSWORD_DEFAULT),
       'name'     => 'I Have a Name',
       'age'      => 1
     ]);
     
-    $connection->table('users')->insert([
+    $this->table('users')->insert([
       'email'    => 'test+no-name@bapcat.com',
       'password' => password_hash('password', PASSWORD_DEFAULT),
       'age'      => 2
     ]);
     
-    $connection->table('users')->insert([
+    $this->table('users')->insert([
       'email'    => 'test+no-name-2@bapcat.com',
       'password' => password_hash('password', PASSWORD_DEFAULT),
       'age'      => 3
@@ -68,9 +66,9 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'user_id' => 'id'
     ];
     
-    $this->query     = new GatewayQuery($connection, 'users', $no_mapping, array_flip($no_mapping), []);
-    $this->mapped    = new GatewayQuery($connection, 'users', $mappings, array_flip($mappings), []);
-    $this->mapped_id = new GatewayQuery($connection, 'users', $mapped_id, array_flip($mapped_id), []);
+    $this->query     = new GatewayQuery($this->connection, 'users', $no_mapping, array_flip($no_mapping), []);
+    $this->mapped    = new GatewayQuery($this->connection, 'users', $mappings, array_flip($mappings), []);
+    $this->mapped_id = new GatewayQuery($this->connection, 'users', $mapped_id, array_flip($mapped_id), []);
   }
   
   public function testFind() {
