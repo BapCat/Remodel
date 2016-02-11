@@ -50,13 +50,13 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     ]);
     
     $no_mapping = [
-        'id' => 'id',
-        'email' => 'email',
-        'password' => 'password',
-        'name' => 'name',
-        'age' => 'age',
-        'created_at' => 'created_at',
-        'updated_at' => 'updated_at'
+      'id' => 'id',
+      'email' => 'email',
+      'password' => 'password',
+      'name' => 'name',
+      'age' => 'age',
+      'created_at' => 'created_at',
+      'updated_at' => 'updated_at'
     ];
     
     $mappings = [
