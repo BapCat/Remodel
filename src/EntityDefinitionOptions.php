@@ -10,9 +10,6 @@ class EntityDefinitionOptions {
   private $raw;
   private $read_only = false;
   
-  private $referenced_entity;
-  private $referenced_field;
-  
   public function __construct($alias, $type) {
     $this->alias = $alias;
     $this->type  = $type;
@@ -26,12 +23,6 @@ class EntityDefinitionOptions {
   
   public function readOnly() {
     $this->read_only = true;
-    return $this;
-  }
-  
-  public function references($entity_class, $referenced_field = null) {
-    $this->referenced_entity = $entity_class;
-    $this->referenced_field  = $referenced_field;
     return $this;
   }
   
@@ -49,13 +40,5 @@ class EntityDefinitionOptions {
   
   protected function getReadOnly() {
     return $this->read_only;
-  }
-  
-  protected function getReferencedEntity() {
-    return $this->referenced_entity;
-  }
-  
-  protected function getReferencedField() {
-    return $this->referenced_field;
   }
 }
