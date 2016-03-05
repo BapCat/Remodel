@@ -6,8 +6,10 @@ require __DIR__ . '/test-init';
 
 use BapCat\CoolThing\User;
 
-$user = $repo->first();
+$user = $repo->withRelations()->first();
 
+echo json_encode($user);
+echo "\n";
 echo json_encode($user->posts);
 echo "\n";
 echo json_encode($user->posts[0]->creator);
