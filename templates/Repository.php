@@ -10,17 +10,9 @@ if(!function_exists('repoVirtualToParam')) {
   }
 
   function repoVirtualsToParams(array $defs) {
-    $args = '';
-    
-    foreach($defs as $i => $def) {
-      $args .= repoVirtualToParam($def);
-      
-      if($i < count($defs) - 1) {
-        $args .= ', ';
-      }
-    }
-    
-    return $args;
+    return implode(', ', array_map(function($def) {
+      return repoVirtualToParam($def);
+    }, $defs));
   }
 }
 
@@ -33,6 +25,7 @@ class <?= $name ?>Repository {
   private $scopes = [];
   private $order_bys = [];
   private $limit = 0;
+  private $relations = false;
   
   private static $REQUIRED = [
 <?php foreach(array_merge([$id], $required) as $def): ?>
@@ -73,6 +66,7 @@ class <?= $name ?>Repository {
     $this->scopes    = [];
     $this->order_bys = [];
     $this->limit     = 0;
+    $this->relations = false;
   }
   
   private function buildQuery() {
@@ -114,6 +108,10 @@ class <?= $name ?>Repository {
       if($raw[$col] !== null) {
         $entity->$col = $this->ioc->make($type, [$raw[$col]]);
       }
+    }
+    
+    if($this->relations) {
+      $entity->cacheRelations();
     }
     
     return $entity;
@@ -192,6 +190,11 @@ class <?= $name ?>Repository {
     return $this;
   }
   
+  public function withRelations() {
+    $this->relations = true;
+    return $this;
+  }
+  
   public function get() {
     $raw = $this->buildQuery();
     
@@ -201,13 +204,13 @@ class <?= $name ?>Repository {
     
     $raw = $raw->get();
     
-    $this->reset();
-    
     $entities = [];
     
     foreach($raw as $row) {
       $entities[] = $this->buildEntity($row);
     }
+    
+    $this->reset();
     
     return $entities;
   }

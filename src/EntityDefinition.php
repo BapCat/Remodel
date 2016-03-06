@@ -1,5 +1,7 @@
 <?php namespace BapCat\Remodel;
 
+use BapCat\Remodel\Relations\Relation;
+
 use BapCat\Propifier\PropifierTrait;
 use BapCat\Values\Timestamp;
 
@@ -17,6 +19,8 @@ class EntityDefinition {
   private $required = [];
   private $optional = [];
   private $virtual = [];
+  private $has_many = [];
+  private $belongs_to = [];
   
   public function __construct($name) {
     $split = explode('\\', $name);
@@ -53,6 +57,14 @@ class EntityDefinition {
     $this->optional('updated_at', Timestamp::class)->readOnly();
   }
   
+  public function hasMany($alias, $entity) {
+    return $this->has_many[] = new Relation($alias, $this->fullname, $entity);
+  }
+  
+  public function belongsTo($alias, $entity) {
+    return $this->belongs_to[] = new Relation($alias, $this->fullname, $entity);
+  }
+  
   protected function getFullname() {
     return $this->fullname;
   }
@@ -83,5 +95,13 @@ class EntityDefinition {
   
   protected function getVirtual() {
     return $this->virtual;
+  }
+  
+  protected function getHasMany() {
+    return $this->has_many;
+  }
+  
+  protected function getBelongsTo() {
+    return $this->belongs_to;
   }
 }

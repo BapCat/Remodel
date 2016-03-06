@@ -10,17 +10,9 @@ if(!function_exists('defToParam')) {
   }
 
   function defsToParams(array $defs, $nullable = false) {
-    $params = '';
-    
-    foreach($defs as $i => $def) {
-      $params .= defToParam($def, $nullable);
-      
-      if($i < count($defs) - 1) {
-        $params .= ', ';
-      }
-    }
-    
-    return $params;
+    return implode(', ', array_map(function($def) use($nullable) {
+      return defToParam($def, $nullable);
+    }, $defs));
   }
 
   function defToArg(EntityDefinitionOptions $def) {
@@ -28,17 +20,9 @@ if(!function_exists('defToParam')) {
   }
 
   function defsToArgs(array $defs) {
-    $args = '';
-    
-    foreach($defs as $i => $def) {
-      $args .= defToArg($def);
-      
-      if($i < count($defs) - 1) {
-        $args .= ', ';
-      }
-    }
-    
-    return $args;
+    return implode(', ', array_map(function($def) {
+      return defToArg($def);
+    }, $defs));
   }
 
   function virtualToArg(array $def) {
@@ -46,17 +30,9 @@ if(!function_exists('defToParam')) {
   }
 
   function virtualsToArgs(array $defs) {
-    $args = '';
-    
-    foreach($defs as $i => $def) {
-      $args .= virtualToArg($def);
-      
-      if($i < count($defs) - 1) {
-        $args .= ', ';
-      }
-    }
-    
-    return $args;
+    return implode(', ', array_map(function($def) {
+      return virtualToArg($def);
+    }, $defs));
   }
 }
 
@@ -65,6 +41,10 @@ if(!function_exists('defToParam')) {
 class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   use \BapCat\Propifier\PropifierTrait;
   
+  const ID_NAME = '{! $id->alias !}';
+  
+  private $ioc;
+  
 @each(array_merge([$id], $required, $optional) as $def)
   private ${! $def->alias !};
 @endeach
@@ -72,7 +52,13 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   private ${! $def['alias'] !};
 @endeach
   
-  private function __construct() { }
+@each($has_many as $relation)
+  private $cache_{! $relation->alias !};
+@endeach
+  
+  private function __construct() {
+    $this->ioc = \BapCat\Interfaces\Ioc\Ioc::instance();
+  }
   
   public static function create({! defsToParams($required) !}) {
     return self::make(null, {! defsToArgs($required) !});
@@ -96,6 +82,16 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     
     return $entity;
   }
+  
+  public function cacheRelations() {
+@each($has_many as $relation)
+    $this->cache_{! $relation->alias !} = $this->{! $relation->alias !};
+    
+    foreach($this->cache_{! $relation->alias !} as $entity) {
+      $entity->cacheRelations();
+    }
+@endeach
+  }
 @each(array_merge([$id], $required, $optional) as $def)
   
   protected function get{! @camelize($def->alias) !}() {
@@ -112,6 +108,26 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     return $this->{! $def['alias'] !};
   }
 @endeach
+@each($has_many as $relation)
+  
+  protected function get{! @camelize($relation->alias) !}() {
+    if(isset($this->cache_{! $relation->alias !})) {
+      return $this->cache_{! $relation->alias !};
+    }
+    
+    $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
+    <?php $foreign_key = $relation->foreign_key ?: @underscore($name) . '_id'; ?>
+    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $id->alias !})->get();
+  }
+@endeach
+@each($belongs_to as $relation)
+  
+  protected function get{! @camelize($relation->alias) !}() {
+    $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
+    <?php $foreign_key = $relation->foreign_key ?: $relation->foreign_entity::ID_NAME; ?>
+    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $relation->alias . '_id' !})->first();
+  }
+@endeach
   
   public function __toString() {
     $output = '{! $namespace !}\{! $name !} ';
@@ -124,7 +140,7 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   }
   
   public function jsonSerialize() {
-    return [
+    $output = [
 @each(array_merge([$id], $required, $optional) as $def)
       '{! $def->alias !}' => $this->{! $def->alias !},
 @endeach
@@ -132,5 +148,13 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
       '{! $def['alias'] !}' => $this->{! $def['alias'] !},
 @endeach
     ];
+    
+@each($has_many as $relation)
+    if(isset($this->cache_{! $relation->alias !})) {
+      $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
+    }
+@endeach
+    
+    return $output;
   }
 }

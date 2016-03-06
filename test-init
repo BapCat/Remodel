@@ -5,6 +5,7 @@ require __DIR__ . '/vendor/autoload.php';
 use BapCat\Phi\Phi;
 use BapCat\Persist\Drivers\Local\LocalDriver;
 use Illuminate\Database\MySqlConnection;
+use Illuminate\Database\ConnectionInterface;
 
 $ioc = Phi::instance();
 
@@ -15,7 +16,7 @@ $cache   = $persist->getDirectory('/cache');
 $pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$connection = new MySqlConnection($pdo, 'test');
+$ioc->bind(ConnectionInterface::class, new MySqlConnection($pdo, 'test'));
 
 use BapCat\Values\Email;
 use BapCat\Values\Password;
@@ -24,8 +25,12 @@ use BapCat\Values\Text;
 use BapCat\Remodel\Registry;
 use BapCat\Remodel\EntityDefinition;
 use BapCat\CoolThing\User;
+use BapCat\CoolThing\UserId;
 use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
+use BapCat\CoolThing\Post;
+use BapCat\CoolThing\PostGateway;
+use BapCat\CoolThing\PostRepository;
 
 $registry = $ioc->make(Registry::class, [$cache]);
 
@@ -34,8 +39,23 @@ $def->required('email', Email::class);
 $def->required('password', Password::class);
 $def->optional('name', Text::class);
 $def->timestamps();
+$def->hasMany('posts', Post::class)->foreignKey('creator_id');
 
 $registry->register($def);
 
-$gate = new UserGateway($connection);
-$repo = new UserRepository(Phi::instance(), $gate);
+$def = new EntityDefinition(Post::class);
+$def->required('creator_id', UserId::class);
+$def->required('text', Text::class);
+$def->timestamps();
+$def->belongsTo('creator', User::class);
+
+$registry->register($def);
+
+$ioc->singleton(UserGateway::class, UserGateway::class);
+$ioc->singleton(UserRepository::class, UserRepository::class);
+
+$ioc->singleton(PostGateway::class, PostGateway::class);
+$ioc->singleton(PostRepository::class, PostRepository::class);
+
+$gate = $ioc->make(UserGateway::class);
+$repo = $ioc->make(UserRepository::class);
