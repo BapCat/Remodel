@@ -86,6 +86,10 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   public function cacheRelations() {
 @each($has_many as $relation)
     $this->cache_{! $relation->alias !} = $this->{! $relation->alias !};
+    
+    foreach($this->cache_{! $relation->alias !} as $entity) {
+      $entity->cacheRelations();
+    }
 @endeach
   }
 @each(array_merge([$id], $required, $optional) as $def)
