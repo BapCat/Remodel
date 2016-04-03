@@ -2,7 +2,6 @@
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Expression;
 
 class GatewayQuery extends Builder {
   private $table;

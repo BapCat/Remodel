@@ -2,9 +2,6 @@
 
 use BapCat\Remodel\GatewayQuery;
 
-use BapCat\Hashing\PasswordHash;
-use BapCat\Hashing\Algorithms\BcryptPasswordHasher;
-
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\SQLiteConnection;
 

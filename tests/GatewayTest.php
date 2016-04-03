@@ -6,7 +6,6 @@ use BapCat\Remodel\EntityDefinition;
 use BapCat\Remodel\Registry;
 
 use BapCat\Hashing\PasswordHash;
-use BapCat\Hashing\Algorithms\BcryptPasswordHasher;
 use BapCat\Values\Email;
 use BapCat\Values\Password;
 use BapCat\Values\Text;
