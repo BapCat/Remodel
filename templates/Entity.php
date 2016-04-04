@@ -124,7 +124,7 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
   protected function get{! @camelize($relation->alias) !}() {
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
-    <?php $foreign_key = $relation->foreign_key ?: $relation->foreign_entity::ID_NAME; ?>
+    <?php $fe = $relation->foreign_entity; $foreign_key = $relation->foreign_key ?: $fe::ID_NAME; ?>
     return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $relation->alias . '_id' !})->first();
   }
 @endeach
