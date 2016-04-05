@@ -78,10 +78,10 @@ class <?= $name ?>Repository {
     ;
     
     foreach($this->scopes as $col => $value) {
-   	  if(is_array($value)) {
-   	    $query = $query->whereIn($col, $value);
-   	    continue;
-   	  }
+      if(is_array($value)) {
+        $query = $query->whereIn($col, $value);
+        continue;
+      }
    	  
       $query = $query->where($col, $value);
     }
