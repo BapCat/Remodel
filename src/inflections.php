@@ -30,3 +30,7 @@ function short($class_name) {
   $parts = explode('\\', $class_name);
   return array_pop($parts);
 }
+
+function keyify($name) {
+  return underscore($name) . '_id';
+}
