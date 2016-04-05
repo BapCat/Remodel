@@ -113,16 +113,18 @@ class Registry {
           ->keyForeign($relation->key_right)
         ;
         
-        //@TODO Don't add if it already exists!
-        echo "Adding {$related->name} hasMany {$def->name}\n";
-        $related->hasMany($relation->alias_join, $def->full_name)
-          ->localKey  ($relation->id_left)
-          ->foreignKey($relation->key_left)
-        ;
+        if(!array_key_exists($relation->alias_join, $def->has_many)) {
+          echo "Adding {$related->name} hasMany {$def->name}\n";
+          $related->hasMany($relation->alias_join, $def->full_name)
+            ->localKey  ($relation->id_left)
+            ->foreignKey($relation->key_left)
+          ;
+        }
         
-        //@TODO Don't add if it already exists!
-        echo "Adding {$def->name} belongsTo {$related->name}\n";
-        $def->belongsTo($relation->alias_left, $related->full_name);
+        if(!array_key_exists($relation->alias_left, $def->belongs_to)) {
+          echo "Adding {$def->name} belongsTo {$related->name}\n";
+          $def->belongsTo($relation->alias_left, $related->full_name);
+        }
         //
         
         // Right side relations
