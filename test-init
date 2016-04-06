@@ -13,9 +13,7 @@ $ioc = Phi::instance();
 $persist = new LocalDriver(__DIR__);
 $cache   = $persist->getDirectory('/cache');
 
-$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '', [
-	PDO::ATTR_EMULATE_PREPARES => false
-]);
+$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $connection = new MySqlConnection($pdo, 'test');
