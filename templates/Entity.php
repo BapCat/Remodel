@@ -24,16 +24,6 @@ if(!function_exists('defToParam')) {
       return defToArg($def);
     }, $defs));
   }
-
-  function virtualToArg(array $def) {
-    return "\$entity->{$def['alias']}";
-  }
-
-  function virtualsToArgs(array $defs) {
-    return implode(', ', array_map(function($def) {
-      return virtualToArg($def);
-    }, $defs));
-  }
 }
 
 ?>
@@ -47,9 +37,6 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
 @each(array_merge([$id], $required, $optional) as $def)
   private ${! $def->alias !};
-@endeach
-@each($virtual as $def)
-  private ${! $def['alias'] !};
 @endeach
   
 @each($has_many as $relation)
@@ -68,10 +55,8 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     return self::make({! defsToArgs(array_merge([$id], $required)) !});
   }
   
-  public static function fromRepository({! defsToParams(array_merge([$id], $required)) !}, callable $accessor) {
-    $entity = static::from({! defsToArgs(array_merge([$id], $required)) !});
-    $accessor({! virtualsToArgs($virtual) !});
-    return $entity;
+  public static function fromRepository({! defsToParams(array_merge([$id], $required)) !}) {
+    return static::from({! defsToArgs(array_merge([$id], $required)) !});
   }
   
   private static function make({! defsToParams(array_merge([$id], $required, $optional), true) !}) {
@@ -100,12 +85,6 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
   protected function set{! @camelize($def->alias) !}({! defToParam($def) !}) {
     $this->{! $def->alias !} = ${! $def->alias !};
-  }
-@endeach
-@each($virtual as $def)
-  
-  protected function get{! @camelize($def['alias']) !}() {
-    return $this->{! $def['alias'] !};
   }
 @endeach
 @each($has_many as $relation)
@@ -151,9 +130,6 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     $output = [
 @each(array_merge([$id], $required, $optional) as $def)
       '{! $def->alias !}' => $this->{! $def->alias !},
-@endeach
-@each($virtual as $def)
-      '{! $def['alias'] !}' => $this->{! $def['alias'] !},
 @endeach
     ];
     

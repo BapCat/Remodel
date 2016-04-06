@@ -11,12 +11,6 @@ class <?= $name ?>Gateway {
 <?php endforeach; ?>
   ];
   
-  protected static $VIRTUAL = [
-<?php foreach($virtual as $def): ?>
-    '<?= $def['alias'] ?>' => <?= var_export($def['raw'], true) ?>,
-<?php endforeach; ?>
-  ];
-  
   private $connection;
   
   public function __construct(ConnectionInterface $connection) {
@@ -28,8 +22,7 @@ class <?= $name ?>Gateway {
       $this->connection,
       '<?= $table ?>',
       static::$MAPPINGS,
-      array_flip(static::$MAPPINGS),
-      static::$VIRTUAL
+      array_flip(static::$MAPPINGS)
     );
   }
 }

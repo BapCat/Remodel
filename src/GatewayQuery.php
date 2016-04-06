@@ -7,11 +7,11 @@ class GatewayQuery {
   private $doctrine;
   private $to_db;
   
-  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $from_db, array $virtual) {
+  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $from_db) {
     $this->doctrine = $connection->getDoctrineSchemaManager()->listTableDetails($table);
     $this->to_db = $to_db;
     
-    $connection->setQueryGrammar (new GrammarWrapper  ($connection->getQueryGrammar (), $to_db, $virtual));
+    $connection->setQueryGrammar (new GrammarWrapper  ($connection->getQueryGrammar (), $to_db));
     $connection->setPostProcessor(new ProcessorWrapper($connection->getPostProcessor(), $this->doctrine, $from_db));
     
     $this->builder = $connection->table($table);

@@ -20,7 +20,6 @@ class EntityDefinition {
   private $id;
   private $required = [];
   private $optional = [];
-  private $virtual = [];
   private $has_many = [];
   private $has_many_through = [];
   private $belongs_to = [];
@@ -50,10 +49,6 @@ class EntityDefinition {
   
   public function optional($alias, $type) {
     return $this->optional[$alias] = new EntityDefinitionOptions($alias, $type);
-  }
-  
-  public function virtual($alias, $type, $raw) {
-    $this->virtual[] = ['raw' => $raw, 'alias' => $alias, 'type' => $type];
   }
   
   public function timestamps() {
@@ -105,10 +100,6 @@ class EntityDefinition {
     return $this->optional;
   }
   
-  protected function getVirtual() {
-    return $this->virtual;
-  }
-  
   protected function getHasMany() {
     return $this->has_many;
   }
@@ -133,7 +124,6 @@ class EntityDefinition {
       'id'         => $this->id,
       'required'   => $this->required,
       'optional'   => $this->optional,
-      'virtual'    => $this->virtual,
       'has_many'   => $this->has_many,
       'has_many_through' => $this->has_many_through,
       'belongs_to' => $this->belongs_to

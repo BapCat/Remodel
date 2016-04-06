@@ -6,12 +6,10 @@ use Illuminate\Database\Query\Grammars\Grammar;
 class GrammarWrapper extends Grammar {
   private $grammar;
   private $to_db;
-  private $virtual;
   
-  public function __construct(Grammar $grammar, array $to_db, array $virtual) {
+  public function __construct(Grammar $grammar, array $to_db) {
     $this->grammar = $grammar;
     $this->to_db = $to_db;
-    $this->virtual = $virtual;
   }
   
   public function getOriginalGrammar() {

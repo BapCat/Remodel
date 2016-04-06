@@ -36,35 +36,35 @@ class Registry {
       $this->checkDefinitions();
       
       $file = $gen->generate('Entity', $builder->toArray());
-      $gen->include($file);
+      $gen->includeFile($file);
     });
     
     $this->tailor->bindCallback($builder->full_name . 'Id', function(Generator $gen) use($builder) {
       $this->checkDefinitions();
       
       $file = $gen->generate('Id', $builder->toArray());
-      $gen->include($file);
+      $gen->includeFile($file);
     });
     
     $this->tailor->bindCallback($builder->full_name . 'Gateway', function(Generator $gen) use($builder) {
       $this->checkDefinitions();
       
       $file = $gen->generate('Gateway', $builder->toArray());
-      $gen->include($file);
+      $gen->includeFile($file);
     });
     
     $this->tailor->bindCallback($builder->full_name . 'Repository', function(Generator $gen) use($builder) {
       $this->checkDefinitions();
       
       $file = $gen->generate('Repository', $builder->toArray());
-      $gen->include($file);
+      $gen->includeFile($file);
     });
     
     $this->tailor->bindCallback($builder->full_name . 'NotFoundException', function(Generator $gen) use($builder) {
       $this->checkDefinitions();
       
       $file = $gen->generate('NotFoundException', $builder->toArray());
-      $gen->include($file);
+      $gen->includeFile($file);
     });
   }
   

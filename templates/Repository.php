@@ -5,18 +5,6 @@
 use function BapCat\Remodel\camelize;
 use function BapCat\Remodel\pluralize;
 
-if(!function_exists('repoVirtualToParam')) {
-  function repoVirtualToParam(array $def) {
-    return "&\${$def['alias']}";
-  }
-
-  function repoVirtualsToParams(array $defs) {
-    return implode(', ', array_map(function($def) {
-      return repoVirtualToParam($def);
-    }, $defs));
-  }
-}
-
 ?>
 
 class <?= $name ?>Repository {
@@ -43,9 +31,6 @@ class <?= $name ?>Repository {
   private static $SELECT_FIELDS = [
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
     '<?= $def->alias ?>',
-<?php endforeach; ?>
-<?php foreach($virtual as $def): ?>
-    '<?= $def['alias'] ?>',
 <?php endforeach; ?>
   ];
   
@@ -94,7 +79,7 @@ class <?= $name ?>Repository {
   }
   
   private function buildEntity(array $raw) {
-    $className = $this->entity;
+    $class_name = $this->entity;
     
     $required = [];
     
@@ -102,13 +87,7 @@ class <?= $name ?>Repository {
       $required[$col] = $this->ioc->make($type, [$raw[$col]]);
     }
     
-    $entity = $this->ioc->call([$className, 'fromRepository'], array_merge($required, [function(<?= repoVirtualsToParams($virtual) ?>) use($raw) {
-<?php foreach($virtual as $def): ?>
-      if($raw['<?= $def['alias'] ?>'] !== null) {
-        $<?= $def['alias'] ?> = $this->ioc->make(\<?= $def['type'] ?>::class, [$raw['<?= $def['alias'] ?>']]);
-      }
-<?php endforeach; ?>
-    }]));
+    $entity = $this->ioc->call([$class_name, 'fromRepository'], $required);
     
     foreach(self::$OPTIONAL as $col => $type) {
       if($raw[$col] !== null) {
