@@ -247,13 +247,13 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
   public function testAvg() {
     $avg = $this->query->avg('age');
     
-    $this->assertSame(2.0, $avg);
+    $this->assertEquals(2, $avg);
   }
   
   public function testAvgMapped() {
     $avg = $this->mapped->avg('user_age');
     
-    $this->assertSame(2.0, $avg);
+    $this->assertEquals(2, $avg);
   }
   
   public function testDelete() {

@@ -1,173 +1,70 @@
 <?php namespace BapCat\Remodel;
 
 use Illuminate\Database\ConnectionInterface;
-use Illuminate\Database\Query\Builder;
 
-class GatewayQuery extends Builder {
-  private $table;
-  private $from_db;
+class GatewayQuery {
+  private $builder;
+  private $doctrine;
   private $to_db;
-  private $virtual;
   
   public function __construct(ConnectionInterface $connection, $table, array $to_db, array $from_db, array $virtual) {
-    parent::__construct($connection, $connection->getQueryGrammar(), $connection->getPostProcessor());
-    $this->from($table);
+    $this->doctrine = $connection->getDoctrineSchemaManager()->listTableDetails($table);
+    $this->to_db = $to_db;
     
-    $this->table = $connection->getDoctrineSchemaManager()->listTableDetails($table);
+    $connection->setQueryGrammar (new GrammarWrapper  ($connection->getQueryGrammar (), $to_db, $virtual));
+    $connection->setPostProcessor(new ProcessorWrapper($connection->getPostProcessor(), $this->doctrine, $from_db));
     
-    $this->to_db   = $to_db;
-    $this->from_db = $from_db;
-    $this->virtual = $virtual;
-  }
-  
-  public function get($columns = ['*']) {
-    if(!is_array($columns)) {
-      $columns = [$columns];
-    }
-    
-    if($this->columns !== null) {
-      $this->columns = $this->remapColumns($this->columns);
-    }
-    
-    $columns = $this->remapColumns($columns);
-    
-    $this->remapWheres();
-    
-    $rows = parent::get($columns);
-    
-    if($this->aggregate === null) {
-      $mapped = [];
-      
-      foreach($rows as $row) {
-        $mapped[] = $this->coerceDataTypesFromDatabase($row);
-      }
-      
-      return $mapped;
-    } else {
-      return $rows;
-    }
-  }
-  
-  public function aggregate($function, $columns = ['*']) {
-    if(!is_array($columns)) {
-      $columns = [$columns];
-    }
-    
-    if($this->columns !== null) {
-      $this->columns = $this->remapColumns($this->columns);
-    }
-    
-    $columns = $this->remapColumns($columns);
-    
-    $this->remapWheres();
-    
-    $value = parent::aggregate($function, $columns);
-    
-    return filter_var($value, FILTER_VALIDATE_INT) ? (int)$value : (float)$value;
-  }
-  
-  public function update(array $values) {
-    //@TODO: Is this fast enough?
-    $values = array_combine($this->remapColumns(array_keys($values)), array_values($values));
-    
-    $this->remapWheres();
-    
-    $values = $this->coerceDataTypesToDatabase($values);
-    
-    return parent::update($values);
+    $this->builder = $connection->table($table);
   }
   
   public function insert(array $values) {
-    //@TODO: Is this fast enough?
-    $values = array_combine($this->remapColumns(array_keys($values)), array_values($values));
-    
-    $this->remapWheres();
-    
-    $values = $this->coerceDataTypesToDatabase($values);
-    
-    return parent::insert($values);
+    $this->remapColumns($values);
+    $this->coerceDataTypesToDatabase($values);
+    return $this->builder->insert($values);
   }
   
-  public function delete($id = null) {
-    $this->remapWheres();
-    
-    return parent::delete($id);
+  public function insertGetId(array $values) {
+    $this->remapColumns($values);
+    $this->coerceDataTypesToDatabase($values);
+    return $this->builder->insertGetId($values);
   }
   
-  private function remapColumns(array $columns) {
-    foreach($columns as &$column) {
+  public function update(array $values) {
+    $this->remapColumns($values);
+    $this->coerceDataTypesToDatabase($values);
+    return $this->builder->update($values);
+  }
+  
+  private function remapColumns(array &$values) {
+    $keys = array_keys($values);
+    
+    foreach($keys as &$column) {
       if(array_key_exists($column, $this->to_db)) {
         $column = $this->to_db[$column];
-      } elseif(array_key_exists($column, $this->virtual)) {
-        $mapping = $this->virtual[$column];
-        
-        if(!is_array($mapping)) {
-          $column = $mapping;
-        } else {
-          $concat = 'CONCAT(';
-          
-          foreach($mapping as $part) {
-            $concat .= $part . ',';
-          }
-          
-          $concat = substr($concat, 0, strlen($concat) - 1) . ") AS $column";
-          $column = $this->raw($concat);
-        }
       }
     }
     
-    return $columns;
+    $values = array_combine($keys, array_values($values));
   }
   
-  private function remapWheres() {
-    if($this->wheres !== null) {
-      foreach($this->wheres as &$where) {
-        if(array_key_exists($where['column'], $this->to_db)) {
-          $where['column'] = $this->to_db[$where['column']];
-        }
-      }
-    }
-  }
-  
-  private function coerceDataTypesFromDatabase(array $row) {
-    $mapped = [];
-    
-    foreach($row as $col => $value) {
-      if(array_key_exists($col, $this->from_db)) {
-        switch($this->table->getColumn($col)->getType()->getName()) {
-          case 'integer':
-            $value = (int)$value;
-          break;
-          
-          case 'timestamp':
-          case 'datetime':
-            $value = strtotime($value);
-          break;
-        }
-        
-        $mapped[$this->from_db[$col]] = $value;
-      } else {
-        $mapped[$col] = $value;
-      }
-    }
-    
-    return $mapped;
-  }
-  
-  private function coerceDataTypesToDatabase(array $row) {
-    $mapped = [];
-    
-    foreach($row as $col => $value) {
-      switch($this->table->getColumn($col)->getType()->getName()) {
+  private function coerceDataTypesToDatabase(array &$row) {
+    foreach($row as $col => &$value) {
+      switch($this->doctrine->getColumn($col)->getType()->getName()) {
         case 'timestamp':
         case 'datetime':
           $value = date('c', $value);
         break;
       }
-      
-      $mapped[$col] = $value;
+    }
+  }
+  
+  public function __call($name, array $arguments) {
+    $return = $this->builder->$name(...$arguments);
+    
+    if($return === $this->builder) {
+      return $this;
     }
     
-    return $mapped;
+    return $return;
   }
 }

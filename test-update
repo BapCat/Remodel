@@ -11,6 +11,6 @@ use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 
 $user = $repo->first();
-$user->name = new Text('Not Corey');
+$user->butt = new Text('Not Corey');
 $repo->save($user);
 var_dump($user);

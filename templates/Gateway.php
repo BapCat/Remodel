@@ -21,7 +21,6 @@ class <?= $name ?>Gateway {
   
   public function __construct(ConnectionInterface $connection) {
     $this->connection = $connection;
-    $this->connection->setFetchMode(\PDO::FETCH_ASSOC);
   }
   
   public function query() {
