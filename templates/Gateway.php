@@ -11,6 +11,12 @@ class <?= $name ?>Gateway {
 <?php endforeach; ?>
   ];
   
+  protected static $TYPES = [
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+    '<?= $def->raw ?>' => '<?= $def->type ?>',
+<?php endforeach; ?>
+  ];
+  
   private $connection;
   
   public function __construct(ConnectionInterface $connection) {
@@ -22,7 +28,8 @@ class <?= $name ?>Gateway {
       $this->connection,
       '<?= $table ?>',
       static::$MAPPINGS,
-      array_flip(static::$MAPPINGS)
+      array_flip(static::$MAPPINGS),
+      static::$TYPES
     );
   }
 }

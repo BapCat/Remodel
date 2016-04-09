@@ -1,20 +1,29 @@
 <?php namespace BapCat\Remodel;
 
+use BapCat\Values\Timestamp;
 use Illuminate\Database\ConnectionInterface;
+
+use ReflectionProperty;
 
 class GatewayQuery {
   private $builder;
-  private $doctrine;
   private $to_db;
+  private $types;
   
-  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $from_db) {
-    $this->doctrine = $connection->getDoctrineSchemaManager()->listTableDetails($table);
+  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $from_db, array $types) {
     $this->to_db = $to_db;
-    
-    $connection->setQueryGrammar (new GrammarWrapper  ($connection->getQueryGrammar (), $to_db));
-    $connection->setPostProcessor(new ProcessorWrapper($connection->getPostProcessor(), $this->doctrine, $from_db));
+    $this->types = $types;
     
     $this->builder = $connection->table($table);
+    
+    // We have to bust our way in here because the Mongo builder is strongly typed to their extended versions
+    $grammar = new ReflectionProperty($this->builder, 'grammar');
+    $grammar->setAccessible(true);
+    $grammar->setValue($this->builder, new GrammarWrapper($connection->getQueryGrammar(), $to_db, $from_db));
+    
+    $processor = new ReflectionProperty($this->builder, 'processor');
+    $processor->setAccessible(true);
+    $processor->setValue($this->builder, new ProcessorWrapper($connection, $from_db));
   }
   
   public function insert(array $values) {
@@ -49,11 +58,12 @@ class GatewayQuery {
   
   private function coerceDataTypesToDatabase(array &$row) {
     foreach($row as $col => &$value) {
-      switch($this->doctrine->getColumn($col)->getType()->getName()) {
-        case 'timestamp':
-        case 'datetime':
-          $value = date('c', $value);
-        break;
+      if(array_key_exists($col, $this->types)) {
+        switch($this->types[$col]) {
+          case Timestamp::class:
+            $value = date('c', $value);
+          break;
+        }
       }
     }
   }

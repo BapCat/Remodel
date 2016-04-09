@@ -8,6 +8,7 @@ trait RemodelTestTrait {
   public function setUpRemodel() {
     $pdo = new PDO('sqlite::memory:');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
     
     $this->connection = new SQLiteConnection($pdo);
     $this->connection->setFetchMode(PDO::FETCH_ASSOC);

@@ -3,13 +3,15 @@
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 
-class GrammarWrapper extends Grammar {
+class GrammarWrapper {
   private $grammar;
   private $to_db;
+  private $from_db;
   
-  public function __construct(Grammar $grammar, array $to_db) {
+  public function __construct(Grammar $grammar, array $to_db, array $from_db) {
     $this->grammar = $grammar;
     $this->to_db = $to_db;
+    $this->from_db = $from_db;
   }
   
   public function getOriginalGrammar() {
@@ -79,26 +81,31 @@ class GrammarWrapper extends Grammar {
   private function remapBuilderColumns(Builder $builder) {
     if($builder->aggregate === null) {
       if($builder->columns === ['*']) {
-        $builder->columns = array_values($this->to_db);
-        return;
+        $builder->columns = array_keys($this->to_db);
       }
       
       if(is_string($builder->columns)) {
         $builder->columns = [$builder->columns];
       }
       
-      $to_map = &$builder->columns;
+      $this->remapColumns($builder->columns);
     } else {
-      $to_map = &$builder->aggregate['columns'];
+      if($builder->aggregate['columns'] == ['*']) {
+        return;
+      }
+      
+      $this->remapColumns($builder->aggregate['columns'], false);
     }
-    
-    $this->remapColumns($to_map);
   }
   
-  private function remapColumns(array &$columns) {
+  private function remapColumns(array &$columns, $alias = true) {
     foreach($columns as &$column) {
-      if(array_key_exists($column, $this->to_db)) {
-        $column = $this->to_db[$column];
+      if($this->to_db[$column] != $column) {
+        if($alias) {
+          $column = $this->to_db[$column] . ' as ' . $column;
+        } else {
+          $column = $this->to_db[$column];
+        }
       }
     }
   }

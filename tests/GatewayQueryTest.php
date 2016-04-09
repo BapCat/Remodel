@@ -2,6 +2,10 @@
 
 use BapCat\Remodel\GatewayQuery;
 use BapCat\Remodel\RemodelTestTrait;
+use BapCat\Values\Email;
+use BapCat\Values\Password;
+use BapCat\Values\Text;
+use BapCat\Values\Timestamp;
 
 use Illuminate\Database\Schema\Blueprint;
 
@@ -54,18 +58,33 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'updated_at' => 'updated_at'
     ];
     
+    $no_mapping_types = [
+      //'id' =>
+      'email' => Email::class,
+      'pasword' => Password::class,
+      'name' => Text::class,
+      //'age' =>
+      'created_at' => Timestamp::class,
+      'updated_at' => Timestamp::class
+    ];
+    
     $mappings = [
       'user_name' => 'name',
       'user_age'  => 'age'
+    ];
+    
+    $mapped_types = [
+      'name' => Text::class,
+      //'age' =>
     ];
     
     $mapped_id = [
       'user_id' => 'id'
     ];
     
-    $this->query     = new GatewayQuery($this->connection, 'users', $no_mapping, array_flip($no_mapping), []);
-    $this->mapped    = new GatewayQuery($this->connection, 'users', $mappings, array_flip($mappings), []);
-    $this->mapped_id = new GatewayQuery($this->connection, 'users', $mapped_id, array_flip($mapped_id), []);
+    $this->query     = new GatewayQuery($this->connection, 'users', $no_mapping, array_flip($no_mapping), $no_mapping_types);
+    $this->mapped    = new GatewayQuery($this->connection, 'users', $mappings,   array_flip($mappings),   $mapped_types);
+    $this->mapped_id = new GatewayQuery($this->connection, 'users', $mapped_id,  array_flip($mapped_id),  []);
   }
   
   public function testFind() {
