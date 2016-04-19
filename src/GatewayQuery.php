@@ -141,7 +141,9 @@ class GatewayQuery extends Builder {
           
           case 'timestamp':
           case 'datetime':
-            $value = strtotime($value);
+            if($value !== null) {
+              $value = strtotime($value);
+            }
           break;
         }
         
@@ -161,9 +163,7 @@ class GatewayQuery extends Builder {
       switch($this->table->getColumn($col)->getType()->getName()) {
         case 'timestamp':
         case 'datetime':
-          if($value !== null) {
-            $value = date('c', $value);
-          }
+          $value = date('c', $value);
         break;
       }
       
