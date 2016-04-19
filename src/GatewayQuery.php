@@ -161,7 +161,9 @@ class GatewayQuery extends Builder {
       switch($this->table->getColumn($col)->getType()->getName()) {
         case 'timestamp':
         case 'datetime':
-          $value = date('c', $value);
+          if($value !== null) {
+            $value = date('c', $value);
+          }
         break;
       }
       
