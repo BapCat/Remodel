@@ -1,17 +1,22 @@
 <?php namespace BapCat\Remodel;
 
+use BapCat\Propifier\PropifierTrait;
+
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 
-class GrammarWrapper {
-  private $grammar;
-  private $to_db;
-  private $from_db;
+class GrammarWrapper extends Grammar {
+  use PropifierTrait;
   
-  public function __construct(Grammar $grammar, array $to_db, array $from_db) {
+  private $grammar;
+  private $to_db = [];
+  
+  public function __construct(Grammar $grammar) {
     $this->grammar = $grammar;
+  }
+  
+  protected function setToDb(array $to_db) {
     $this->to_db = $to_db;
-    $this->from_db = $from_db;
   }
   
   public function getOriginalGrammar() {
@@ -30,6 +35,10 @@ class GrammarWrapper {
   }
   
   public function compileInsert(Builder $query, array $values) {
+    foreach($values as &$row) {
+      $this->beforePut($row);
+    }
+    
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsert($query, $values);
     //var_dump($sql);
@@ -37,6 +46,10 @@ class GrammarWrapper {
   }
   
   public function compileInsertGetId(Builder $query, $values, $sequence) {
+    foreach($values as &$row) {
+      $this->beforePut($row);
+    }
+    
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsertGetId($query, $values, $sequence);
     //var_dump($sql);
@@ -44,6 +57,7 @@ class GrammarWrapper {
   }
   
   public function compileUpdate(Builder $query, $values) {
+    $this->beforePut($values);
     $this->remapWheres($query);
     $sql = $this->grammar->compileUpdate($query, $values);
     //var_dump($sql);
@@ -76,6 +90,18 @@ class GrammarWrapper {
   private function beforeGet(Builder $builder) {
     $this->remapBuilderColumns($builder);
     $this->remapWheres($builder);
+  }
+  
+  private function beforePut(array &$values) {
+    $keys = array_keys($values);
+    
+    foreach($keys as &$column) {
+      if(array_key_exists($column, $this->to_db)) {
+        $column = $this->to_db[$column];
+      }
+    }
+    
+    $values = array_combine($keys, array_values($values));
   }
   
   private function remapBuilderColumns(Builder $builder) {

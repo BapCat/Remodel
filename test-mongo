@@ -35,11 +35,6 @@ $ioc->bind(ConnectionInterface::class, function() {
   return $connection;
 });
 
-$ioc->bind(Illuminate\Database\Query\Builder::class, function() use($ioc) {
-  $connection = $ioc->make(ConnectionInterface::class);
-  return new Jenssegers\Mongodb\Query\Builder($connection, $connection->getPostProcessor());
-});
-
 use BapCat\Values\Email;
 use BapCat\Values\Password;
 use BapCat\Values\Text;
@@ -63,6 +58,7 @@ use BapCat\CoolThing\UserDeviceRepository;
 $registry = $ioc->make(Registry::class, [$cache]);
 
 $def = new EntityDefinition(User::class);
+$def->id(UserId::class)->mapsTo('_id');
 $def->required('email', Email::class);
 $def->required('password', Password::class);
 $def->optional('name', Text::class);
@@ -100,8 +96,6 @@ $ioc->singleton(DeviceRepository::class, DeviceRepository::class);
 
 $ioc->singleton(UserDeviceGateway::class, UserDeviceGateway::class);
 $ioc->singleton(UserDeviceRepository::class, UserDeviceRepository::class);
-
-//exit(0);
 
 $gate = $ioc->make(UserGateway::class);
 $repo = $ioc->make(UserRepository::class);

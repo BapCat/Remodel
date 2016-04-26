@@ -1,8 +1,12 @@
 <<?= '?php' ?> namespace <?= $namespace ?>;
 
 use BapCat\Remodel\GatewayQuery;
+use BapCat\Remodel\GrammarWrapper;
+use BapCat\Remodel\RemodelConnection;
 
 use Illuminate\Database\ConnectionInterface;
+
+use PDO;
 
 class <?= $name ?>Gateway {
   protected static $MAPPINGS = [
@@ -28,7 +32,6 @@ class <?= $name ?>Gateway {
       $this->connection,
       '<?= $table ?>',
       static::$MAPPINGS,
-      array_flip(static::$MAPPINGS),
       static::$TYPES
     );
   }
