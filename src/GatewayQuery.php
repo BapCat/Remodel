@@ -141,7 +141,9 @@ class GatewayQuery extends Builder {
           
           case 'timestamp':
           case 'datetime':
-            $value = strtotime($value);
+            if($value !== null) {
+              $value = strtotime($value);
+            }
           break;
         }
         

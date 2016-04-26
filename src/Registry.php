@@ -7,10 +7,13 @@ use BapCat\Nom\NomTransformer;
 use BapCat\Nom\Pipeline;
 use BapCat\Persist\Directory;
 use BapCat\Persist\Drivers\Local\LocalDriver;
+use BapCat\Tailor\Generator;
 use BapCat\Tailor\Tailor;
 
 class Registry {
   private $tailor;
+  private $defs = [];
+  private $unchecked = [];
   
   public function __construct(Ioc $ioc, Directory $cache) {
     $preprocessor = $ioc->make(NomTransformer::class);
@@ -26,22 +29,175 @@ class Registry {
   }
   
   public function register(EntityDefinition $builder) {
-    $options = [
-      'namespace'  => $builder->namespace,
-      'name'       => $builder->name,
-      'table'      => $builder->table,
-      'id'         => $builder->id,
-      'required'   => $builder->required,
-      'optional'   => $builder->optional,
-      'virtual'    => $builder->virtual,
-      'has_many'   => $builder->has_many,
-      'belongs_to' => $builder->belongs_to
-    ];
+    $this->defs[$builder->full_name] = $builder;
+    $this->unchecked[] = $builder;
     
-    $this->tailor->bind($builder->fullname, 'Entity', $options);
-    $this->tailor->bind($builder->fullname . 'Id', 'Id', $options);
-    $this->tailor->bind($builder->fullname . 'Gateway', 'Gateway', $options);
-    $this->tailor->bind($builder->fullname . 'Repository', 'Repository', $options);
-    $this->tailor->bind($builder->fullname . 'NotFoundException', 'NotFoundException', $options);
+    $this->tailor->bindCallback($builder->full_name, function(Generator $gen) use($builder) {
+      $this->checkDefinitions();
+      
+      $file = $gen->generate('Entity', $builder->toArray());
+      $gen->include($file);
+    });
+    
+    $this->tailor->bindCallback($builder->full_name . 'Id', function(Generator $gen) use($builder) {
+      $this->checkDefinitions();
+      
+      $file = $gen->generate('Id', $builder->toArray());
+      $gen->include($file);
+    });
+    
+    $this->tailor->bindCallback($builder->full_name . 'Gateway', function(Generator $gen) use($builder) {
+      $this->checkDefinitions();
+      
+      $file = $gen->generate('Gateway', $builder->toArray());
+      $gen->include($file);
+    });
+    
+    $this->tailor->bindCallback($builder->full_name . 'Repository', function(Generator $gen) use($builder) {
+      $this->checkDefinitions();
+      
+      $file = $gen->generate('Repository', $builder->toArray());
+      $gen->include($file);
+    });
+    
+    $this->tailor->bindCallback($builder->full_name . 'NotFoundException', function(Generator $gen) use($builder) {
+      $this->checkDefinitions();
+      
+      $file = $gen->generate('NotFoundException', $builder->toArray());
+      $gen->include($file);
+    });
+  }
+  
+  private function checkDefinitions() {
+    // Add many to many stuff if necessary
+    foreach($this->unchecked as $def) {
+      foreach($def->many_to_many as $relation) {
+        echo "Processing many to many for {$def->name}\n";
+        
+        // Set up left keys
+        $related = $this->defs[$relation->entity_left];
+        
+        if(empty($relation->id_left)) {
+          echo "Setting {$relation->alias_join} id_left to {$related->id->alias}\n";
+          $relation->idLeft($related->id->alias);
+        }
+        
+        if(empty($relation->key_left)) {
+          echo "Setting {$relation->alias_join} key_left to " . keyify($related->name) . "\n";
+          $relation->keyLeft(keyify($related->name));
+        }
+        //
+        
+        // Set up right keys
+        $related = $this->defs[$relation->entity_right];
+        
+        if(empty($relation->id_right)) {
+          echo "Setting {$relation->alias_join} id_right to {$related->id->alias}\n";
+          $relation->idRight($related->id->alias);
+        }
+        
+        if(empty($relation->key_right)) {
+          echo "Setting {$relation->alias_join} key_right to " . keyify($related->name) . "\n";
+          $relation->keyRight(keyify($related->name));
+        }
+        //
+        
+        // Left side relations
+        $related = $this->defs[$relation->entity_left];
+        
+        echo "Adding {$related->name} hasManyThrough {$relation->alias_join} to {$relation->alias_right}\n";
+        $related->hasManyThrough(pluralize($relation->alias_right), $relation->entity_join, $relation->entity_right)
+          ->idLocal($relation->id_left)
+          ->idForeign($relation->id_right)
+          ->keyLocal($relation->key_left)
+          ->keyForeign($relation->key_right)
+        ;
+        
+        if(!array_key_exists($relation->alias_join, $def->has_many)) {
+          echo "Adding {$related->name} hasMany {$def->name}\n";
+          $related->hasMany($relation->alias_join, $def->full_name)
+            ->localKey  ($relation->id_left)
+            ->foreignKey($relation->key_left)
+          ;
+        }
+        
+        if(!array_key_exists($relation->alias_left, $def->belongs_to)) {
+          echo "Adding {$def->name} belongsTo {$related->name}\n";
+          $def->belongsTo($relation->alias_left, $related->full_name);
+        }
+        //
+        
+        // Right side relations
+        $related = $this->defs[$relation->entity_right];
+        
+        echo "Adding {$related->name} hasManyThrough {$relation->alias_join} to {$relation->alias_left}\n";
+        $related->hasManyThrough(pluralize($relation->alias_left), $relation->entity_join, $relation->entity_left)
+          ->idLocal($relation->id_right)
+          ->idForeign($relation->id_left)
+          ->keyLocal($relation->key_right)
+          ->keyForeign($relation->key_left)
+        ;
+        
+        if(!array_key_exists($relation->alias_join, $def->has_many)) {
+          echo "Adding {$related->name} hasMany {$def->name}\n";
+          $related->hasMany($relation->alias_join, $def->full_name)
+            ->localKey  ($relation->id_right)
+            ->foreignKey($relation->key_right)
+          ;
+        }
+        
+        if(!array_key_exists($relation->alias_right, $def->belongs_to)) {
+          echo "Adding {$def->name} belongsTo {$related->name}\n";
+          $def->belongsTo($relation->alias_right, $related->full_name);
+        }
+        //
+      }
+    }
+    
+    // Add has many stuff if necessary
+    foreach($this->unchecked as $def) {
+      foreach($def->has_many as $relation) {
+        echo "Processing has many for {$def->name}\n";
+        
+        $related = $this->defs[$relation->foreign_entity];
+        
+        if(empty($relation->local_key)) {
+          echo "Setting {$relation->alias} local_key to {$def->id->alias}\n";
+          $relation->localKey($def->id->alias);
+        }
+        
+        if(empty($relation->foreign_key)) {
+          echo "Setting {$relation->alias} foreign_key to " . keyify($related->name) . "\n";
+          $relation->foreignKey(keyify($related->name));
+        }
+      }
+    }
+    
+    // Add belongs to stuff if necessary
+    foreach($this->unchecked as $def) {
+      foreach($def->belongs_to as $relation) {
+        echo "Processing belongs to for {$def->name}\n";
+        
+        $related = $this->defs[$relation->foreign_entity];
+        
+        if(empty($relation->local_key)) {
+          echo "Setting {$relation->alias} local_key to " . keyify($related->name) . "\n";
+          $relation->localKey(keyify($related->name));
+        }
+        
+        if(empty($relation->foreign_key)) {
+          echo "Setting {$relation->alias} foreign_key to {$def->id->alias}\n";
+          $relation->foreignKey($related->id->alias);
+        }
+        
+        if(!array_key_exists($relation->local_key, $related->required)) {
+          echo "Adding {$def->name} column {$relation->local_key} of type {$related->id->type}\n";
+          $def->required($relation->local_key, $related->id->type);
+        }
+      }
+    }
+    
+    // We've checked everything in the queue.  Clear it out.
+    $this->unchecked = [];
   }
 }

@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+
+<?php
+
+require __DIR__ . '/test-init';
+
+use BapCat\CoolThing\User;
+
+$user = $repo->first();
+
+echo json_encode($user), "\n";
+
+$user_devices = $user->user_devices;
+
+echo count($user_devices) . " user_devices\n";
+
+foreach($user_devices as $user_device) {
+  echo json_encode($user_device), "\n";
+  
+  $device = $user_device->device;
+  
+  echo json_encode($device), "\n";
+  echo json_encode($device->users), "\n";
+}
+
+echo json_encode($user->devices), "\n";

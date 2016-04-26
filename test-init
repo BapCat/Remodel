@@ -31,6 +31,12 @@ use BapCat\CoolThing\UserRepository;
 use BapCat\CoolThing\Post;
 use BapCat\CoolThing\PostGateway;
 use BapCat\CoolThing\PostRepository;
+use BapCat\CoolThing\Device;
+use BapCat\CoolThing\DeviceGateway;
+use BapCat\CoolThing\DeviceRepository;
+use BapCat\CoolThing\UserDevice;
+use BapCat\CoolThing\UserDeviceGateway;
+use BapCat\CoolThing\UserDeviceRepository;
 
 $registry = $ioc->make(Registry::class, [$cache]);
 
@@ -38,16 +44,26 @@ $def = new EntityDefinition(User::class);
 $def->required('email', Email::class);
 $def->required('password', Password::class);
 $def->optional('name', Text::class);
-$def->timestamps();
 $def->hasMany('posts', Post::class)->foreignKey('creator_id');
+$def->timestamps();
 
 $registry->register($def);
 
 $def = new EntityDefinition(Post::class);
-$def->required('creator_id', UserId::class);
 $def->required('text', Text::class);
+$def->belongsTo('creator', User::class)->localKey('creator_id');
 $def->timestamps();
-$def->belongsTo('creator', User::class);
+
+$registry->register($def);
+
+$def = new EntityDefinition(Device::class);
+$def->required('mac', Text::class);
+$def->timestamps();
+
+$registry->register($def);
+
+$def = new EntityDefinition(UserDevice::class);
+$def->associates('user_devices', 'user', User::class, 'device', Device::class);
 
 $registry->register($def);
 
@@ -56,6 +72,12 @@ $ioc->singleton(UserRepository::class, UserRepository::class);
 
 $ioc->singleton(PostGateway::class, PostGateway::class);
 $ioc->singleton(PostRepository::class, PostRepository::class);
+
+$ioc->singleton(DeviceGateway::class, DeviceGateway::class);
+$ioc->singleton(DeviceRepository::class, DeviceRepository::class);
+
+$ioc->singleton(UserDeviceGateway::class, UserDeviceGateway::class);
+$ioc->singleton(UserDeviceRepository::class, UserDeviceRepository::class);
 
 $gate = $ioc->make(UserGateway::class);
 $repo = $ioc->make(UserRepository::class);
