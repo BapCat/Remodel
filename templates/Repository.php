@@ -3,6 +3,7 @@
 <?php
 
 use function BapCat\Remodel\camelize;
+use function BapCat\Remodel\pluralize;
 
 if(!function_exists('repoVirtualToParam')) {
   function repoVirtualToParam(array $def) {
@@ -77,6 +78,11 @@ class <?= $name ?>Repository {
     ;
     
     foreach($this->scopes as $col => $value) {
+      if(is_array($value)) {
+        $query = $query->whereIn($col, $value);
+        continue;
+      }
+   	  
       $query = $query->where($col, $value);
     }
     
@@ -173,6 +179,13 @@ class <?= $name ?>Repository {
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
   public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
+    $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
+    return $this;
+  }
+<?php endforeach; ?>
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+  
+  public function withMany<?= pluralize(camelize($def->alias)) ?>(array $<?= $def->alias ?>) {
     $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
     return $this;
   }

@@ -1,5 +1,7 @@
 <?php namespace BapCat\Remodel;
 
+use BapCat\Remodel\Relations\HasManyThrough;
+use BapCat\Remodel\Relations\ManyToMany;
 use BapCat\Remodel\Relations\Relation;
 
 use BapCat\Propifier\PropifierTrait;
@@ -11,7 +13,7 @@ use function BapCat\Remodel\underscore;
 class EntityDefinition {
   use PropifierTrait;
   
-  private $fullname;
+  private $full_name;
   private $name;
   private $namespace;
   private $table;
@@ -20,12 +22,14 @@ class EntityDefinition {
   private $optional = [];
   private $virtual = [];
   private $has_many = [];
+  private $has_many_through = [];
   private $belongs_to = [];
+  private $many_to_many = [];
   
   public function __construct($name) {
     $split = explode('\\', $name);
     
-    $this->fullname = $name;
+    $this->full_name = $name;
     $this->name = array_pop($split);
     $this->namespace = implode('\\', $split);
     $this->table(pluralize(underscore($this->name)));
@@ -41,11 +45,11 @@ class EntityDefinition {
   }
   
   public function required($alias, $type) {
-    return $this->required[] = new EntityDefinitionOptions($alias, $type);
+    return $this->required[$alias] = new EntityDefinitionOptions($alias, $type);
   }
   
   public function optional($alias, $type) {
-    return $this->optional[] = new EntityDefinitionOptions($alias, $type);
+    return $this->optional[$alias] = new EntityDefinitionOptions($alias, $type);
   }
   
   public function virtual($alias, $type, $raw) {
@@ -58,15 +62,23 @@ class EntityDefinition {
   }
   
   public function hasMany($alias, $entity) {
-    return $this->has_many[] = new Relation($alias, $this->fullname, $entity);
+    return $this->has_many[$entity] = new Relation($alias, $this->full_name, $entity);
+  }
+  
+  public function hasManyThrough($alias, $entity_join, $entity_foreign) {
+    return $this->has_many_through[] = new HasManyThrough($alias, $entity_join, $entity_foreign);
   }
   
   public function belongsTo($alias, $entity) {
-    return $this->belongs_to[] = new Relation($alias, $this->fullname, $entity);
+    return $this->belongs_to[$entity] = new Relation($alias, $this->full_name, $entity);
   }
   
-  protected function getFullname() {
-    return $this->fullname;
+  public function associates($alias_join, $alias_left, $entity_left, $alias_right, $entity_right) {
+    return $this->many_to_many[] = new ManyToMany($alias_join, $alias_left, $this->full_name, $entity_left, $alias_right, $entity_right);
+  }
+  
+  protected function getFullName() {
+    return $this->full_name;
   }
   
   protected function getName() {
@@ -101,7 +113,30 @@ class EntityDefinition {
     return $this->has_many;
   }
   
+  protected function getHasManyThrough() {
+    return $this->has_many_through;
+  }
+  
   protected function getBelongsTo() {
     return $this->belongs_to;
+  }
+  
+  protected function getManyToMany() {
+    return $this->many_to_many;
+  }
+  
+  public function toArray() {
+    return [
+      'namespace'  => $this->namespace,
+      'name'       => $this->name,
+      'table'      => $this->table,
+      'id'         => $this->id,
+      'required'   => $this->required,
+      'optional'   => $this->optional,
+      'virtual'    => $this->virtual,
+      'has_many'   => $this->has_many,
+      'has_many_through' => $this->has_many_through,
+      'belongs_to' => $this->belongs_to
+    ];
   }
 }

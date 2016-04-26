@@ -13,7 +13,7 @@ class EntityDefinitionTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testGuesses() {
-    $this->assertSame(Entity::class, $this->def->fullname);
+    $this->assertSame(Entity::class, $this->def->full_name);
     
     $split = explode('\\', Entity::class);
     $this->assertSame(array_pop($split), $this->def->name);
@@ -44,8 +44,8 @@ class EntityDefinitionTest extends PHPUnit_Framework_TestCase {
     $this->assertCount(3, $this->def->required);
     
     foreach($this->def->required as $index => $required) {
-      $this->assertSame('required' . ($index + 1), $required->alias);
-      $this->assertSame('required' . ($index + 1) . '_type', $required->type);
+      $this->assertSame($index, $required->alias);
+      $this->assertSame($index . '_type', $required->type);
     }
   }
   
@@ -57,8 +57,8 @@ class EntityDefinitionTest extends PHPUnit_Framework_TestCase {
     $this->assertCount(3, $this->def->optional);
     
     foreach($this->def->optional as $index => $optional) {
-      $this->assertSame('optional' . ($index + 1), $optional->alias);
-      $this->assertSame('optional' . ($index + 1) . '_type', $optional->type);
+      $this->assertSame($index, $optional->alias);
+      $this->assertSame($index . '_type', $optional->type);
     }
   }
   
@@ -67,10 +67,10 @@ class EntityDefinitionTest extends PHPUnit_Framework_TestCase {
     
     $this->assertCount(2, $this->def->optional);
     
-    $this->assertSame('created_at', $this->def->optional[0]->alias);
-    $this->assertSame(Timestamp::class, $this->def->optional[0]->type);
+    $this->assertSame('created_at', $this->def->optional['created_at']->alias);
+    $this->assertSame(Timestamp::class, $this->def->optional['created_at']->type);
     
-    $this->assertSame('updated_at', $this->def->optional[1]->alias);
-    $this->assertSame(Timestamp::class, $this->def->optional[1]->type);
+    $this->assertSame('updated_at', $this->def->optional['updated_at']->alias);
+    $this->assertSame(Timestamp::class, $this->def->optional['updated_at']->type);
   }
 }

@@ -116,16 +116,24 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     }
     
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
-    <?php $foreign_key = $relation->foreign_key ?: @underscore($name) . '_id'; ?>
-    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $id->alias !})->get();
+    return $repo->with{! @camelize($relation->foreign_key) !}($this->{! $relation->local_key !})->get();
+  }
+@endeach
+@each($has_many_through as $relation)
+  
+  protected function get{! @camelize($relation->alias) !}() {
+    $gateway = $this->ioc->make(\{! $relation->entity_join !}Gateway::class);
+    $ids = array_column($gateway->query()->where('{! $relation->key_local !}', $this->{! $relation->id_local !})->get(), '{! $relation->key_foreign !}');
+    
+    $repo = $this->ioc->make(\{! $relation->entity_foreign !}Repository::class);
+    return $repo->withMany{! \BapCat\Remodel\pluralize(@camelize($relation->id_foreign)) !}($ids)->get();
   }
 @endeach
 @each($belongs_to as $relation)
   
   protected function get{! @camelize($relation->alias) !}() {
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
-    <?php $fe = $relation->foreign_entity; $foreign_key = $relation->foreign_key ?: $fe::ID_NAME; ?>
-    return $repo->with{! @camelize($foreign_key) !}($this->{! $relation->local_key ?: $relation->alias . '_id' !})->first();
+    return $repo->with{! @camelize($relation->foreign_key) !}($this->{! $relation->local_key !})->first();
   }
 @endeach
   
