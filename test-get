@@ -20,7 +20,7 @@ echo json_encode($user);
 echo "\n\n";
 
 echo json_encode($gate->query()
-  ->select('id', 'email', 'password', 'name', 'created_at', 'updated_at')
+  ->select('id', 'email', 'password', 'butt', 'created_at', 'updated_at')
   ->get()
 );
 

@@ -1,15 +1,11 @@
+#!/bin/env php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
 
 use BapCat\Phi\Phi;
 use BapCat\Persist\Drivers\Local\LocalDriver;
-use BapCat\Remodel\RemodelConnection;
-use Illuminate\Database\Grammar;
-use Illuminate\Database\Processors\Processor;
-use Illuminate\Database\Query\Grammars\MySqlGrammar;
-use Illuminate\Database\Query\Processors\MySqlProcessor;
-//use Illuminate\Database\MySqlConnection;
+use Jenssegers\Mongodb\Connection;
 use Illuminate\Database\ConnectionInterface;
 
 $ioc = Phi::instance();
@@ -18,12 +14,26 @@ $ioc = Phi::instance();
 $persist = new LocalDriver(__DIR__);
 $cache   = $persist->getDirectory('/cache');
 
-$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+//$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
+//$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$ioc->bind(ConnectionInterface::class, new RemodelConnection($pdo, new MySqlGrammar(), new MySqlProcessor()));
+$ioc->bind(ConnectionInterface::class, function() {
+  $connection = new Connection([
+    'driver'   => 'mongodb',
+    'host'     => 'localhost',
+    'port'     => 27017,
+    'database' => 'remodel',
+    'username' => '',
+    'password' => '',
+    'options' => [
+      'db' => 'admin' // sets the authentication database required by mongo 3
+    ]
+  ]);
+  
+  $connection->useDefaultQueryGrammar();
+  
+  return $connection;
+});
 
 use BapCat\Values\Email;
 use BapCat\Values\Password;
@@ -48,9 +58,10 @@ use BapCat\CoolThing\UserDeviceRepository;
 $registry = $ioc->make(Registry::class, [$cache]);
 
 $def = new EntityDefinition(User::class);
+$def->id(UserId::class)->mapsTo('_id');
 $def->required('email', Email::class);
 $def->required('password', Password::class);
-$def->optional('butt', Text::class)->mapsTo('name');
+$def->optional('name', Text::class);
 $def->hasMany('posts', Post::class)->foreignKey('creator_id');
 $def->timestamps();
 
@@ -88,3 +99,5 @@ $ioc->singleton(UserDeviceRepository::class, UserDeviceRepository::class);
 
 $gate = $ioc->make(UserGateway::class);
 $repo = $ioc->make(UserRepository::class);
+
+var_dump($gate->query()->get());

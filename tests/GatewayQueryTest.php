@@ -2,6 +2,10 @@
 
 use BapCat\Remodel\GatewayQuery;
 use BapCat\Remodel\RemodelTestTrait;
+use BapCat\Values\Email;
+use BapCat\Values\Password;
+use BapCat\Values\Text;
+use BapCat\Values\Timestamp;
 
 use Illuminate\Database\Schema\Blueprint;
 
@@ -9,11 +13,29 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
   use RemodelTestTrait;
   
   private $query;
-  private $mapped;
-  private $mapped_id;
   
   public function setUp() {
-    $this->setUpRemodel();
+    $no_mapping = [
+      'id' => 'id',
+      'email' => 'email',
+      'password' => 'password',
+      'name' => 'name',
+      'age' => 'age',
+      'created_at' => 'created_at',
+      'updated_at' => 'updated_at'
+    ];
+    
+    $no_mapping_types = [
+      //'id' =>
+      'email' => Email::class,
+      'pasword' => Password::class,
+      'name' => Text::class,
+      //'age' =>
+      'created_at' => Timestamp::class,
+      'updated_at' => Timestamp::class
+    ];
+    
+    $this->setUpRemodel($no_mapping);
     
     $this->createTable('users', function(Blueprint $table) {
       $table->increments('id');
@@ -44,43 +66,12 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'age'      => 3
     ]);
     
-    $no_mapping = [
-      'id' => 'id',
-      'email' => 'email',
-      'password' => 'password',
-      'name' => 'name',
-      'age' => 'age',
-      'created_at' => 'created_at',
-      'updated_at' => 'updated_at'
-    ];
-    
-    $mappings = [
-      'user_name' => 'name',
-      'user_age'  => 'age'
-    ];
-    
-    $mapped_id = [
-      'user_id' => 'id'
-    ];
-    
-    $this->query     = new GatewayQuery($this->connection, 'users', $no_mapping, array_flip($no_mapping), []);
-    $this->mapped    = new GatewayQuery($this->connection, 'users', $mappings, array_flip($mappings), []);
-    $this->mapped_id = new GatewayQuery($this->connection, 'users', $mapped_id, array_flip($mapped_id), []);
+    $this->query = new GatewayQuery($this->connection, 'users', $no_mapping, $no_mapping_types);
   }
   
   public function testFind() {
     $user = $this->query->find(1);
     $this->assertSame('test+name@bapcat.com', $user['email']);
-  }
-  
-  public function testFindMapped() {
-    $user = $this->mapped->find(1);
-    $this->assertSame('I Have a Name', $user['user_name']);
-  }
-  
-  public function testFindMappedId() {
-    $user = $this->mapped_id->find(1);
-    $this->assertSame(1, $user['user_id']);
   }
   
   public function testGetSimple() {
@@ -102,14 +93,6 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->assertSame('test+name@bapcat.com', $user[0]['email']);
   }
   
-  public function testGetMapped() {
-    list($user1, $user2) = $this->mapped->get('user_name');
-    
-    $this->assertSame('I Have a Name', $user1['user_name']);
-    
-    $this->assertNull($user2['user_name']);
-  }
-  
   public function testGetIntIsInt() {
     $user = $this->query->first();
     
@@ -122,25 +105,11 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->assertInternalType('int', $user['created_at']);
   }
   
-  public function testGetMappedWithWhere() {
-    $user = $this->mapped->whereNotNull('user_name')->get('user_name');
-    
-    $this->assertCount(1, $user);
-    $this->assertSame('I Have a Name', $user[0]['user_name']);
-  }
-  
   public function testSelectGet() {
     $user = $this->query->select('name')->first();
     
     $this->assertCount(1, $user);
     $this->assertSame('I Have a Name', $user['name']);
-  }
-  
-  public function testSelectGetMapped() {
-    $user = $this->mapped->select('user_name')->first();
-    
-    $this->assertCount(1, $user);
-    $this->assertSame('I Have a Name', $user['user_name']);
   }
   
   public function testUpdate() {
@@ -149,14 +118,6 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $user = $this->query->select('name')->where('id', 1)->first();
     
     $this->assertSame('Test', $user['name']);
-  }
-  
-  public function testUpdateMapped() {
-    $this->mapped->where('id', 1)->update(['user_name' => 'Test']);
-    
-    $user = $this->mapped->select('user_name')->where('id', 1)->first();
-    
-    $this->assertSame('Test', $user['user_name']);
   }
   
   public function testUpdateTimestamp() {
@@ -181,29 +142,8 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->assertSame($email, $user['email']);
   }
   
-  public function testInsertMapped() {
-    $name = 'My Name';
-    
-    $this->mapped->insert([
-      'email'     => 'test+insertmapped@bapcat.com',
-      'password'  => password_hash('password', PASSWORD_DEFAULT),
-      'user_name' => $name,
-      'age'       => 5
-    ]);
-    
-    $user = $this->mapped->where('user_name', $name)->first();
-    
-    $this->assertSame($name, $user['user_name']);
-  }
-  
   public function testCount() {
     $count = $this->query->whereNull('name')->count();
-    
-    $this->assertSame(2, $count);
-  }
-  
-  public function testCountMapped() {
-    $count = $this->mapped->whereNull('user_name')->count();
     
     $this->assertSame(2, $count);
   }
@@ -214,20 +154,8 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->assertSame(1, $min);
   }
   
-  public function testMinMapped() {
-    $min = $this->mapped->min('user_age');
-    
-    $this->assertSame(1, $min);
-  }
-  
   public function testMax() {
     $max = $this->query->max('age');
-    
-    $this->assertSame(3, $max);
-  }
-  
-  public function testMaxMapped() {
-    $max = $this->mapped->max('user_age');
     
     $this->assertSame(3, $max);
   }
@@ -238,22 +166,10 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $this->assertSame(6, $sum);
   }
   
-  public function testSumMapped() {
-    $sum = $this->mapped->sum('user_age');
-    
-    $this->assertSame(6, $sum);
-  }
-  
   public function testAvg() {
     $avg = $this->query->avg('age');
     
-    $this->assertSame(2.0, $avg);
-  }
-  
-  public function testAvgMapped() {
-    $avg = $this->mapped->avg('user_age');
-    
-    $this->assertSame(2.0, $avg);
+    $this->assertEquals(2, $avg);
   }
   
   public function testDelete() {
@@ -264,18 +180,6 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
   
   public function testDeleteImplicitId() {
     $result = $this->query->delete(1);
-    
-    $this->assertSame(1, $result);
-  }
-  
-  public function testDeleteMappedId() {
-    $result = $this->mapped_id->where('user_id', 1)->delete();
-    
-    $this->assertSame(1, $result);
-  }
-  
-  public function testDeleteImplicitMappedId() {
-    $result = $this->mapped_id->delete(1);
     
     $this->assertSame(1, $result);
   }

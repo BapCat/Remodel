@@ -1,8 +1,12 @@
 <<?= '?php' ?> namespace <?= $namespace ?>;
 
 use BapCat\Remodel\GatewayQuery;
+use BapCat\Remodel\GrammarWrapper;
+use BapCat\Remodel\RemodelConnection;
 
 use Illuminate\Database\ConnectionInterface;
+
+use PDO;
 
 class <?= $name ?>Gateway {
   protected static $MAPPINGS = [
@@ -11,9 +15,9 @@ class <?= $name ?>Gateway {
 <?php endforeach; ?>
   ];
   
-  protected static $VIRTUAL = [
-<?php foreach($virtual as $def): ?>
-    '<?= $def['alias'] ?>' => <?= var_export($def['raw'], true) ?>,
+  protected static $TYPES = [
+<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+    '<?= $def->raw ?>' => '<?= $def->type ?>',
 <?php endforeach; ?>
   ];
   
@@ -21,7 +25,6 @@ class <?= $name ?>Gateway {
   
   public function __construct(ConnectionInterface $connection) {
     $this->connection = $connection;
-    $this->connection->setFetchMode(\PDO::FETCH_ASSOC);
   }
   
   public function query() {
@@ -29,8 +32,7 @@ class <?= $name ?>Gateway {
       $this->connection,
       '<?= $table ?>',
       static::$MAPPINGS,
-      array_flip(static::$MAPPINGS),
-      static::$VIRTUAL
+      static::$TYPES
     );
   }
 }
