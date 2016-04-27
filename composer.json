@@ -14,13 +14,16 @@
 		"bapcat/nom" : "^0.3.1",
 		"bapcat/persist" : "^0.2.5",
 		"bapcat/tailor" : "^0.3.1",
-		"bapcat/propifier" : "^1.2",
-		"jenssegers/mongodb" : "^3.0"
+		"bapcat/propifier" : "^1.2"
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^5.0",
 		"bapcat/values" : "^0.1.1",
-		"bapcat/phi" : "^2.0"
+		"bapcat/phi" : "^2.0",
+		"jenssegers/mongodb" : "^3.0"
+	},
+	"suggest": {
+		"jenssegers/mongodb": "Required to use MongoDB"
 	},
 	"autoload" : {
 		"psr-4" : {
