@@ -5,10 +5,10 @@ php:
   - 7.0
 
 before_script:
+  - pecl install mongodb
   - travis_retry composer self-update
   - travis_retry composer install --prefer-source
   - composer require satooshi/php-coveralls --prefer-source
-  - pecl install mongodb
 
 script:
   - mkdir -p build/logs
