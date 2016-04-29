@@ -46,10 +46,7 @@ class GrammarWrapper extends Grammar {
   }
   
   public function compileInsertGetId(Builder $query, $values, $sequence) {
-    foreach($values as &$row) {
-      $this->beforePut($row);
-    }
-    
+    $this->beforePut($values);
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsertGetId($query, $values, $sequence);
     //var_dump($sql);
