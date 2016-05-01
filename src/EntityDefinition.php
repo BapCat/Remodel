@@ -24,6 +24,7 @@ class EntityDefinition {
   private $has_many_through = [];
   private $belongs_to = [];
   private $many_to_many = [];
+  private $callbacks = [];
   
   public function __construct($name) {
     $split = explode('\\', $name);
@@ -72,6 +73,10 @@ class EntityDefinition {
     return $this->many_to_many[] = new ManyToMany($alias_join, $alias_left, $this->full_name, $entity_left, $alias_right, $entity_right);
   }
   
+  public function callback($name, callable $callback) {
+    $this->callbacks[$name] = $callback;
+  }
+  
   protected function getFullName() {
     return $this->full_name;
   }
@@ -116,6 +121,10 @@ class EntityDefinition {
     return $this->many_to_many;
   }
   
+  protected function getCallbacks() {
+    return $this->callbacks;
+  }
+  
   public function toArray() {
     return [
       'namespace'  => $this->namespace,
@@ -126,7 +135,8 @@ class EntityDefinition {
       'optional'   => $this->optional,
       'has_many'   => $this->has_many,
       'has_many_through' => $this->has_many_through,
-      'belongs_to' => $this->belongs_to
+      'belongs_to' => $this->belongs_to,
+      'callbacks'  => array_keys($this->callbacks)
     ];
   }
 }

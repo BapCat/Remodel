@@ -53,6 +53,9 @@ $def->required('password', Password::class);
 $def->optional('butt', Text::class)->mapsTo('name');
 $def->hasMany('posts', Post::class)->foreignKey('creator_id');
 $def->timestamps();
+$def->callback('asdf', function() {
+  echo 'BUTTS';
+});
 
 $registry->register($def);
 

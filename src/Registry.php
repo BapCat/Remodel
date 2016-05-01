@@ -11,11 +11,14 @@ use BapCat\Tailor\Generator;
 use BapCat\Tailor\Tailor;
 
 class Registry {
+  private $ioc;
   private $tailor;
   private $defs = [];
   private $unchecked = [];
   
   public function __construct(Ioc $ioc, Directory $cache) {
+    $this->ioc = $ioc;
+    
     $preprocessor = $ioc->make(NomTransformer::class);
     $compiler     = $ioc->make(Compiler::class);
     $pipeline     = $ioc->make(Pipeline::class, [$cache, $compiler, [$preprocessor]]);
@@ -37,35 +40,20 @@ class Registry {
       
       $file = $gen->generate('Entity', $builder->toArray());
       $gen->includeFile($file);
+      
+      $this->ioc->bind('bap.remodel.callbacks.' . str_replace('\\', '.', $builder->full_name), function() use($builder) {
+        return $builder->callbacks;
+      });
     });
     
-    $this->tailor->bindCallback($builder->full_name . 'Id', function(Generator $gen) use($builder) {
-      $this->checkDefinitions();
-      
-      $file = $gen->generate('Id', $builder->toArray());
-      $gen->includeFile($file);
-    });
-    
-    $this->tailor->bindCallback($builder->full_name . 'Gateway', function(Generator $gen) use($builder) {
-      $this->checkDefinitions();
-      
-      $file = $gen->generate('Gateway', $builder->toArray());
-      $gen->includeFile($file);
-    });
-    
-    $this->tailor->bindCallback($builder->full_name . 'Repository', function(Generator $gen) use($builder) {
-      $this->checkDefinitions();
-      
-      $file = $gen->generate('Repository', $builder->toArray());
-      $gen->includeFile($file);
-    });
-    
-    $this->tailor->bindCallback($builder->full_name . 'NotFoundException', function(Generator $gen) use($builder) {
-      $this->checkDefinitions();
-      
-      $file = $gen->generate('NotFoundException', $builder->toArray());
-      $gen->includeFile($file);
-    });
+    foreach(['Id', 'Gateway', 'Repository', 'NotFoundException'] as $class) {
+      $this->tailor->bindCallback($builder->full_name . $class, function(Generator $gen) use($builder, $class) {
+        $this->checkDefinitions();
+        
+        $file = $gen->generate($class, $builder->toArray());
+        $gen->includeFile($file);
+      });
+    }
   }
   
   private function checkDefinitions() {

@@ -34,6 +34,7 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   const ID_NAME = '{! $id->alias !}';
   
   private $ioc;
+  private $callbacks = [];
   
 @each(array_merge([$id], $required, $optional) as $def)
   private ${! $def->alias !};
@@ -45,6 +46,8 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
   private function __construct() {
     $this->ioc = \BapCat\Interfaces\Ioc\Ioc::instance();
+    
+    $this->callbacks = $this->ioc->make("bap.remodel.callbacks.{! str_replace('\\', '.', $namespace) !}.{! $name !}");
   }
   
   public static function create({! defsToParams($required) !}) {
@@ -113,6 +116,12 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   protected function get{! @camelize($relation->alias) !}() {
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
     return $repo->with{! @camelize($relation->foreign_key) !}($this->{! $relation->local_key !})->first();
+  }
+@endeach
+@each($callbacks as $callback)
+  
+  public function {! $callback !}() {
+    return $this->callbacks['{! $callback !}']();
   }
 @endeach
   
