@@ -7,12 +7,14 @@ class GatewayQuery {
   private $builder;
   private $to_db;
   private $types;
+  private $scopes;
   
-  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $types) {
+  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $types, array $scopes) {
     $connection->getQueryGrammar()->to_db = $to_db;
     
     $this->to_db = $to_db;
     $this->types = $types;
+    $this->scopes = $scopes;
     
     $this->builder = $connection->table($table);
   }
@@ -45,7 +47,11 @@ class GatewayQuery {
   }
   
   public function __call($name, array $arguments) {
-    $return = $this->builder->$name(...$arguments);
+    if(array_key_exists($name, $this->scopes)) {
+      $return = $this->scopes[$name]($this, ...$arguments);
+    } else {
+      $return = $this->builder->$name(...$arguments);
+    }
     
     if($return === $this->builder) {
       return $this;

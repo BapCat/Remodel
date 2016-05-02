@@ -22,9 +22,13 @@ class <?= $name ?>Gateway {
   ];
   
   private $connection;
+  private $scopes = [];
   
   public function __construct(ConnectionInterface $connection) {
     $this->connection = $connection;
+    
+    $ioc = \BapCat\Interfaces\Ioc\Ioc::instance();
+    $this->scopes = $ioc->make("bap.remodel.scopes.{! str_replace('\\', '.', $namespace) !}.{! $name !}");
   }
   
   public function query() {
@@ -32,7 +36,8 @@ class <?= $name ?>Gateway {
       $this->connection,
       '<?= $table ?>',
       static::$MAPPINGS,
-      static::$TYPES
+      static::$TYPES,
+      $this->scopes
     );
   }
 }

@@ -35,15 +35,15 @@ class Registry {
     $this->defs[$builder->full_name] = $builder;
     $this->unchecked[] = $builder;
     
+    $this->ioc->bind('bap.remodel.scopes.' . str_replace('\\', '.', $builder->full_name), function() use($builder) {
+      return $builder->scopes;
+    });
+    
     $this->tailor->bindCallback($builder->full_name, function(Generator $gen) use($builder) {
       $this->checkDefinitions();
       
       $file = $gen->generate('Entity', $builder->toArray());
       $gen->includeFile($file);
-      
-      $this->ioc->bind('bap.remodel.callbacks.' . str_replace('\\', '.', $builder->full_name), function() use($builder) {
-        return $builder->callbacks;
-      });
     });
     
     foreach(['Id', 'Gateway', 'Repository', 'NotFoundException'] as $class) {
