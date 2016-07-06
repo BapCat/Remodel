@@ -38,7 +38,7 @@ class RemodelConnection extends Connection {
         $types[$meta['name']] = strtolower($type);
       }
       
-      return $statement->fetchAll();
+      return $statement->fetchAll(PDO::FETCH_ASSOC);
     });
     
     foreach($rows as &$row) {
