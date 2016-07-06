@@ -43,20 +43,22 @@ class RemodelConnection extends Connection {
     
     foreach($rows as &$row) {
       foreach($row as $col => &$value) {
-        switch($types[$col]) {
-          case 'long':
-          case 'integer':
-            $value = (int)$value;
-          break;
-          
-          case 'double':
-            $value = (double)$value;
-          break;
-          
-          case 'timestamp':
-          case 'datetime':
-            $value = strtotime($value);
-          break;
+        if($value !== null) {
+          switch($types[$col]) {
+            case 'long':
+            case 'integer':
+              $value = (int)$value;
+            break;
+            
+            case 'double':
+              $value = (double)$value;
+            break;
+            
+            case 'timestamp':
+            case 'datetime':
+              $value = strtotime($value);
+            break;
+          }
         }
       }
     }
