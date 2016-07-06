@@ -16,6 +16,7 @@ class EntityDefinition {
   private $full_name;
   private $name;
   private $namespace;
+  private $traits = [];
   private $table;
   private $id;
   private $required = [];
@@ -72,6 +73,10 @@ class EntityDefinition {
   public function associates($alias_join, $alias_left, $entity_left, $alias_right, $entity_right) {
     return $this->many_to_many[] = new ManyToMany($alias_join, $alias_left, $this->full_name, $entity_left, $alias_right, $entity_right);
   }
+
+  public function traits(array $traits) {
+    $this->traits = $traits;
+  }
   
   public function callback($name, callable $callback) {
     $this->callbacks[$name] = $callback;
@@ -87,6 +92,10 @@ class EntityDefinition {
   
   protected function getNamespace() {
     return $this->namespace;
+  }
+
+  protected function getTraits() {
+    return $this->traits;
   }
   
   protected function getTable() {
@@ -128,6 +137,7 @@ class EntityDefinition {
   public function toArray() {
     return [
       'namespace'  => $this->namespace,
+      'traits'     => $this->traits,
       'name'       => $this->name,
       'table'      => $this->table,
       'id'         => $this->id,

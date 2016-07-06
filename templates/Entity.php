@@ -1,5 +1,4 @@
 @php namespace {! $namespace !};
-
 <?php
 
 use BapCat\Remodel\EntityDefinitionOptions;
@@ -30,6 +29,9 @@ if(!function_exists('defToParam')) {
 
 class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   use \BapCat\Propifier\PropifierTrait;
+@each($traits as $trait)
+  use \{! $trait !};
+@endeach
   
   const ID_NAME = '{! $id->alias !}';
   
