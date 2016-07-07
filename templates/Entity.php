@@ -77,13 +77,23 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     }
 @endeach
   }
-@each(array_merge([$id], $required, $optional) as $def)
+@each(array_merge([$id], $required) as $def)
   
   protected function get{! @camelize($def->alias) !}() {
     return $this->{! $def->alias !};
   }
   
   protected function set{! @camelize($def->alias) !}({! defToParam($def) !}) {
+    $this->{! $def->alias !} = ${! $def->alias !};
+  }
+@endeach
+@each($optional as $def)
+  
+  protected function get{! @camelize($def->alias) !}() {
+    return $this->{! $def->alias !};
+  }
+  
+  protected function set{! @camelize($def->alias) !}({! defToParam($def, true) !}) {
     $this->{! $def->alias !} = ${! $def->alias !};
   }
 @endeach
