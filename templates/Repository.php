@@ -16,6 +16,8 @@ class <?= $name ?>Repository {
   private $limit = 0;
   private $relations = false;
   
+  private $scope_callbacks = [];
+  
   private static $REQUIRED = [
 <?php foreach(array_merge([$id], $required) as $def): ?>
     '<?= $def->alias ?>' => \<?= $def->type ?>::class,
@@ -46,6 +48,8 @@ class <?= $name ?>Repository {
     $this->ioc     = $ioc;
     $this->entity  = \<?= $namespace ?>\<?= $name ?>::class;
     $this->gateway = $gateway;
+    
+    $this->scope_callbacks = $ioc->make("bap.remodel.scopes.<?= str_replace('\\', '.', $namespace) ?>.<?= $name ?>");
   }
   
   public function reset() {
@@ -62,13 +66,8 @@ class <?= $name ?>Repository {
       ->select(static::$SELECT_FIELDS)
     ;
     
-    foreach($this->scopes as $col => $value) {
-      if(is_array($value)) {
-        $query = $query->whereIn($col, $value);
-        continue;
-      }
-   	  
-      $query = $query->where($col, $value);
+    foreach($this->scopes as $scope) {
+      $query = $scope[0]($query, ...$scope[1]);
     }
     
     foreach($this->order_bys as $order_by) {
@@ -147,8 +146,8 @@ class <?= $name ?>Repository {
       ->query()
     ;
     
-    foreach($this->scopes as $col => $value) {
-      $query = $query->where($col, $value);
+    foreach($this->scopes as $scope) {
+      $query = $scope[0]($query, ...$scope[1]);
     }
     
     $query->delete();
@@ -157,22 +156,39 @@ class <?= $name ?>Repository {
   }
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
-  public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $<?= $def->alias ?>) {
-    $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
+  public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $value) {
+    $this->scopes[] = [function($query) use($value) {
+      return $query->where('<?= $def->alias ?>', $value);
+    }, []];
+    
     return $this;
   }
-<?php endforeach; ?>
-<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
   
-  public function withMany<?= pluralize(camelize($def->alias)) ?>(array $<?= $def->alias ?>) {
-    $this->scopes['<?= $def->alias ?>'] = $<?= $def->alias ?>;
+  public function orWith<?= camelize($def->alias) ?>(\<?= $def->type ?> $value) {
+    $this->scopes[] = [function($query) use($value) {
+      return $query->orWhere('<?= $def->alias ?>', $value);
+    }, []];
+    
     return $this;
   }
-<?php endforeach; ?>
-<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+  
+  public function withMany<?= pluralize(camelize($def->alias)) ?>(array $values) {
+    $this->scopes[] = [function($query) use($value) {
+      return $query->whereIn('<?= $def->alias ?>', $value);
+    }, []];
+    
+    return $this;
+  }
   
   public function orderBy<?= camelize($def->alias) ?>() {
     $this->order_bys[] = '<?= $def->alias ?>';
+    return $this;
+  }
+<?php endforeach; ?>
+<?php foreach($scopes as $scope): ?>
+  
+  public function <?= $scope ?>() {
+    $this->scopes[] = [$this->scope_callbacks['<?= $scope ?>'], func_get_args()];
     return $this;
   }
 <?php endforeach; ?>

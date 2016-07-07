@@ -66,7 +66,7 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'age'      => 3
     ]);
     
-    $this->query = new GatewayQuery($this->connection, 'users', $no_mapping, $no_mapping_types);
+    $this->query = new GatewayQuery($this->connection, 'users', $no_mapping, $no_mapping_types, []);
   }
   
   public function testFind() {
