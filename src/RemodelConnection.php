@@ -51,12 +51,16 @@ class RemodelConnection extends Connection {
             break;
             
             case 'double':
-              $value = (double)$value;
+              $value = (float)$value;
             break;
             
             case 'timestamp':
             case 'datetime':
-              $value = strtotime($value);
+              if(strpos($value, '.') === false) {
+                $value = strtotime($value);
+              } else {
+                $value = (float)DateTime::createFromFormat('Y-m-d H:i:s.u', $value)->format('U.u');
+              }
             break;
           }
         }
