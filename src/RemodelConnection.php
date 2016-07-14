@@ -4,6 +4,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 
+use DateTime;
 use PDO;
 
 class RemodelConnection extends Connection {
