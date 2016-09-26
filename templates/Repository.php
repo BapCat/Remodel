@@ -173,8 +173,8 @@ class <?= $name ?>Repository {
   }
   
   public function withMany<?= pluralize(camelize($def->alias)) ?>(array $values) {
-    $this->scopes[] = [function($query) use($value) {
-      return $query->whereIn('<?= $def->alias ?>', $value);
+    $this->scopes[] = [function($query) use($values) {
+      return $query->whereIn('<?= $def->alias ?>', $values);
     }, []];
     
     return $this;
