@@ -43,6 +43,10 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   private $cache_{! $relation->alias !};
 @endeach
   
+@each($has_many_through as $relation)
+  private $cache_{! $relation->alias !};
+@endeach
+  
   private function __construct() {
     $this->ioc = \BapCat\Interfaces\Ioc\Ioc::instance();
   }
@@ -70,6 +74,14 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
   public function cacheRelations() {
 @each($has_many as $relation)
+    $this->cache_{! $relation->alias !} = $this->{! $relation->alias !};
+    
+    foreach($this->cache_{! $relation->alias !} as $entity) {
+      $entity->cacheRelations();
+    }
+@endeach
+    
+@each($has_many_through as $relation)
     $this->cache_{! $relation->alias !} = $this->{! $relation->alias !};
     
     foreach($this->cache_{! $relation->alias !} as $entity) {
@@ -144,6 +156,12 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
     ];
     
 @each($has_many as $relation)
+    if(isset($this->cache_{! $relation->alias !})) {
+      $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
+    }
+@endeach
+    
+@each($has_many_through as $relation)
     if(isset($this->cache_{! $relation->alias !})) {
       $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
     }
