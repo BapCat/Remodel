@@ -10,6 +10,7 @@ class GrammarWrapper extends Grammar {
   
   private $grammar;
   private $to_db = [];
+  private $replace_into = false;
   
   public function __construct(Grammar $grammar) {
     $this->grammar = $grammar;
@@ -21,6 +22,10 @@ class GrammarWrapper extends Grammar {
   
   public function getOriginalGrammar() {
     return $this->grammar;
+  }
+  
+  public function replace() {
+    $this->replace_into = true;
   }
   
   public function compileSelect(Builder $query) {
@@ -41,6 +46,12 @@ class GrammarWrapper extends Grammar {
     
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsert($query, $values);
+    
+    if($this->replace_into) {
+      $sql = preg_replace('/^insert into/i', 'replace into', $sql);
+      $this->replace_into = false;
+    }
+    
     //var_dump($sql);
     return $sql;
   }
@@ -49,6 +60,12 @@ class GrammarWrapper extends Grammar {
     $this->beforePut($values);
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsertGetId($query, $values, $sequence);
+    
+    if($this->replace_into) {
+      $sql = preg_replace('/^insert into/i', 'replace into', $sql);
+      $this->replace_into = false;
+    }
+    
     //var_dump($sql);
     return $sql;
   }

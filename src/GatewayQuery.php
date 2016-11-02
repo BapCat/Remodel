@@ -5,12 +5,14 @@ use Illuminate\Database\ConnectionInterface;
 
 class GatewayQuery {
   private $builder;
+  private $grammar;
   private $to_db;
   private $types;
   private $scopes;
   
   public function __construct(ConnectionInterface $connection, $table, array $to_db, array $types, array $scopes) {
-    $connection->getQueryGrammar()->to_db = $to_db;
+    $this->grammar = $connection->getQueryGrammar();
+    $this->grammar->to_db = $to_db;
     
     $this->to_db = $to_db;
     $this->types = $types;
@@ -32,6 +34,16 @@ class GatewayQuery {
   public function update(array $values) {
     $this->coerceDataTypesToDatabase($values);
     return $this->builder->update($values);
+  }
+  
+  public function replace(array $values) {
+    $this->grammar->replace();
+    return $this->insert($values);
+  }
+  
+  public function replaceGetId(array $values) {
+    $this->grammar->replace();
+    return $this->insertGetId($values);
   }
   
   private function coerceDataTypesToDatabase(array &$row) {

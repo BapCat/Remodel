@@ -13,9 +13,11 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
   use RemodelTestTrait;
   
   private $query;
+  private $no_mapping;
+  private $no_mapping_types;
   
   public function setUp() {
-    $no_mapping = [
+    $this->no_mapping = [
       'id' => 'id',
       'email' => 'email',
       'password' => 'password',
@@ -25,7 +27,7 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'updated_at' => 'updated_at'
     ];
     
-    $no_mapping_types = [
+    $this->no_mapping_types = [
       //'id' =>
       'email' => Email::class,
       'pasword' => Password::class,
@@ -35,7 +37,7 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'updated_at' => Timestamp::class
     ];
     
-    $this->setUpRemodel($no_mapping);
+    $this->setUpRemodel($this->no_mapping);
     
     $this->createTable('users', function(Blueprint $table) {
       $table->increments('id');
@@ -66,7 +68,11 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
       'age'      => 3
     ]);
     
-    $this->query = new GatewayQuery($this->connection, 'users', $no_mapping, $no_mapping_types, []);
+    $this->newQuery();
+  }
+  
+  private function newQuery() {
+    $this->query = new GatewayQuery($this->connection, 'users', $this->no_mapping, $this->no_mapping_types, []);
   }
   
   public function testFind() {
@@ -140,6 +146,53 @@ class GatewayQueryTest extends PHPUnit_Framework_TestCase {
     $user = $this->query->where('email', $email)->first();
     
     $this->assertSame($email, $user['email']);
+  }
+  
+  public function testReplace() {
+    $email = 'test+replace@bapcat.com';
+    
+    $this->query->replace([
+      'email'    => $email,
+      'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 4,
+    ]);
+    
+    $user1 = $this->query->where('email', $email)->first();
+    
+    $this->assertSame($email, $user1['email']);
+    
+    $email = 'test+replace2@bapcat.com';
+    
+    $this->query->replace([
+      'id'       => $user1['id'],
+      'email'    => $email,
+      'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 4
+    ]);
+    
+    $this->newQuery();
+    $user2 = $this->query->where('email', $email)->first();
+    
+    $this->assertSame($email, $user2['email']);
+    
+    $this->assertSame($user1['id'], $user2['id']);
+  }
+  
+  public function testReplaceGetId() {
+    $id1 = $this->query->replaceGetId([
+      'email'    => 'test+replace@bapcat.com',
+      'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 4,
+    ]);
+    
+    $id2 = $this->query->replaceGetId([
+      'id'       => $id1,
+      'email'    => 'test+replace2@bapcat.com',
+      'password' => password_hash('password', PASSWORD_DEFAULT),
+      'age'      => 4
+    ]);
+    
+    $this->assertSame($id1, $id2);
   }
   
   public function testCount() {
