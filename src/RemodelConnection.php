@@ -1,5 +1,6 @@
 <?php namespace BapCat\Remodel;
 
+use Doctrine\DBAL\Driver as DoctrineDriver;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
@@ -8,10 +9,14 @@ use DateTime;
 use PDO;
 
 class RemodelConnection extends Connection {
-  public function __construct(PDO $pdo, Grammar $grammar, Processor $processor) {
+  private $doctrine;
+  
+  public function __construct(PDO $pdo, Grammar $grammar, Processor $processor, DoctrineDriver $doctrine = null) {
     parent::__construct($pdo);
     $this->queryGrammar  = new GrammarWrapper($grammar);
     $this->postProcessor = $processor;
+    
+    $this->doctrine = $doctrine;
   }
 
   public function select($query, $bindings = [], $useReadPdo = true) {
@@ -69,5 +74,9 @@ class RemodelConnection extends Connection {
     }
     
     return $rows;
+  }
+  
+  protected function getDoctrineDriver() {
+    return $this->doctrine;
   }
 }
