@@ -9,6 +9,7 @@ use DateTime;
 use PDO;
 
 class RemodelConnection extends Connection {
+  private $builder;
   private $doctrine;
   
   public function __construct(PDO $pdo, Grammar $grammar, Processor $processor, DoctrineDriver $doctrine = null) {
@@ -17,6 +18,10 @@ class RemodelConnection extends Connection {
     $this->postProcessor = $processor;
     
     $this->doctrine = $doctrine;
+  }
+  
+  public function setSchemaBuilderClass($class) {
+    $this->builder = $class;
   }
 
   public function select($query, $bindings = [], $useReadPdo = true) {
@@ -74,6 +79,15 @@ class RemodelConnection extends Connection {
     }
     
     return $rows;
+  }
+  
+  public function getSchemaBuilder() {
+    if(empty($this->builder)) {
+      return parent::getSchemaBuilder();
+    }
+    
+    $class = $this->builder;
+    return new $class($this);
   }
   
   protected function getDoctrineDriver() {
