@@ -138,6 +138,16 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   }
 @endeach
   
+  public function save() {
+    $repo = $this->ioc->make(\{! $namespace !}\{! $name !}Repository::class);
+    $repo->save($this);
+  }
+  
+  public function delete() {
+    $repo = $this->ioc->make(\{! $namespace !}\{! $name !}Repository::class);
+    $repo->withId($this->id)->delete();
+  }
+  
   public function __toString() {
     $output = '{! $namespace !}\{! $name !} ';
     

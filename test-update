@@ -12,5 +12,5 @@ use BapCat\CoolThing\UserRepository;
 
 $user = $repo->first();
 $user->butt = new Text('Not Corey');
-$repo->save($user);
+$user->save();
 var_dump($user);
