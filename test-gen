@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+
+<?php
+
+require __DIR__ . '/test-init';
+
+echo "Generating...\n";
+
+$registry->generateAll();
+
+echo "Done\n";

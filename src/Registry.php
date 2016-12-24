@@ -11,11 +11,32 @@ use BapCat\Tailor\Generator;
 use BapCat\Tailor\Tailor;
 
 class Registry {
+  const CLASS_SUFFIXES = ['Id', 'Gateway', 'Repository', 'NotFoundException'];
+  
+  /**
+   * @var  Ioc  $ioc
+   */
   private $ioc;
+  
+  /**
+   * @var  Tailor  $tailor
+   */
   private $tailor;
+  
+  /**
+   * @var  array<string, EntityDefinition>  $defs
+   */
   private $defs = [];
+  
+  /**
+   * @var  EntityDefinition[]  $unchecked
+   */
   private $unchecked = [];
   
+  /**
+   * @param  Ioc        $ioc
+   * @param  Directory  $cache  Where to cache generated classes
+   */
   public function __construct(Ioc $ioc, Directory $cache) {
     $this->ioc = $ioc;
     
@@ -31,6 +52,13 @@ class Registry {
     $this->tailor = $ioc->make(Tailor::class, [$templates, $cache, $pipeline, $hasher]);
   }
   
+  /**
+   * Register an Entity definition.  Note this method DOES NOT generate the classes.  They are generated when needed.
+   * 
+   * @param  EntityDefinition  $builder
+   * 
+   * @return  void
+   */
   public function register(EntityDefinition $builder) {
     $this->defs[$builder->full_name] = $builder;
     $this->unchecked[] = $builder;
@@ -46,7 +74,7 @@ class Registry {
       $gen->includeFile($file);
     });
     
-    foreach(['Id', 'Gateway', 'Repository', 'NotFoundException'] as $class) {
+    foreach(static::CLASS_SUFFIXES as $class) {
       $this->tailor->bindCallback($builder->full_name . $class, function(Generator $gen) use($builder, $class) {
         $this->checkDefinitions();
         
@@ -56,6 +84,30 @@ class Registry {
     }
   }
   
+  /**
+   * Forces the pre-generation of every registered Entity (and supporting classes, eg. Repositories)
+   * 
+   * Note: for the sake of your IDE, it's a good idea to clear your cache directory before doing this
+   * 
+   * @return  void
+   */
+  public function generateAll() {
+    $this->checkDefinitions();
+    
+    foreach($this->defs as $def) {
+      class_exists($def->full_name);
+      
+      foreach(static::CLASS_SUFFIXES as $class) {
+        class_exists($def->full_name . $class);
+      }
+    }
+  }
+  
+  /**
+   * Links up any definitions that were left open for Remodel to interpret
+   * 
+   * @return  void
+   */
   private function checkDefinitions() {
     // Add many to many stuff if necessary
     foreach($this->unchecked as $def) {
