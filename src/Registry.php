@@ -95,10 +95,10 @@ class Registry {
     $this->checkDefinitions();
     
     foreach($this->defs as $def) {
-      class_exists($def->full_name);
+      $this->tailor->getGenerator()->generate('Entity', $def->toArray());
       
       foreach(static::CLASS_SUFFIXES as $class) {
-        class_exists($def->full_name . $class);
+        $this->tailor->getGenerator()->generate($class, $def->toArray());
       }
     }
   }
