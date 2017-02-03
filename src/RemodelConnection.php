@@ -27,13 +27,13 @@ class RemodelConnection extends Connection {
   public function select($query, $bindings = [], $useReadPdo = true) {
     $types = [];
     
-    $rows = $this->run($query, $bindings, function($me, $query, $bindings) use($useReadPdo, &$types) {
-      if($me->pretending()) {
+    $rows = $this->run($query, $bindings, function($query, $bindings) use($useReadPdo, &$types) {
+      if($this->pretending()) {
         return [];
       }
       
       $statement = $this->getPdoForSelect($useReadPdo)->prepare($query);
-      $statement->execute($me->prepareBindings($bindings));
+      $statement->execute($this->prepareBindings($bindings));
       
       for($i = 0; $i < $statement->columnCount(); $i++) {
         $meta = $statement->getColumnMeta($i);
