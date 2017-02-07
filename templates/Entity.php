@@ -124,7 +124,7 @@ class {! $name !} implements \BapCat\Remodel\Entity, \JsonSerializable {
   
   protected function get{! @camelize($relation->alias) !}() {
     $gateway = $this->ioc->make(\{! $relation->entity_join !}Gateway::class);
-    $ids = array_column($gateway->query()->where('{! $relation->key_local !}', $this->{! $relation->id_local !})->get(), '{! $relation->key_foreign !}');
+    $ids = array_column($gateway->query()->select('{! $relation->key_foreign !}')->where('{! $relation->key_local !}', $this->{! $relation->id_local !})->get()->all(), '{! $relation->key_foreign !}');
     
     $repo = $this->ioc->make(\{! $relation->entity_foreign !}Repository::class);
     return $repo->withMany{! \BapCat\Remodel\pluralize(@camelize($relation->id_foreign)) !}($ids)->get();
