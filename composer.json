@@ -13,7 +13,7 @@
     "bapcat/hashing" : "^0.2.3",
     "bapcat/nom" : "^0.3.1",
     "bapcat/persist" : "^0.2.5",
-    "bapcat/tailor" : "^0.3.2",
+    "bapcat/tailor" : "^0.4",
     "bapcat/propifier" : "^1.2",
     "illuminate/database" : "^5.4"
   },
