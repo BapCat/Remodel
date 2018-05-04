@@ -135,25 +135,26 @@ class <?= $name ?>Repository {
    */
   private function buildEntity(array $raw) {
     $class_name = $this->entity;
-    
-    $required = [];
-    
+
+    $params = [];
     foreach(self::$REQUIRED as $col => $type) {
-      $required[$col] = $this->ioc->make($type, [$raw[$col]]);
+      $params[$col] = $this->ioc->make($type, [$raw[$col]]);
     }
-    
-    $entity = $this->ioc->call([$class_name, 'fromRepository'], $required);
-    
+
     foreach(self::$OPTIONAL as $col => $type) {
       if($raw[$col] !== null) {
-        $entity->$col = $this->ioc->make($type, [$raw[$col]]);
+        $params[$col] = $this->ioc->make($type, [$raw[$col]]);
+      } else {
+        $params[$col] = null;
       }
     }
-    
+
+    $entity = $this->ioc->call([$class_name, 'fromRepository'], $params);
+
     if($this->relations) {
       $entity->cacheRelations();
     }
-    
+
     return $entity;
   }
 

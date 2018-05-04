@@ -150,8 +150,14 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  {! $name !}
 
    */
-  public static function fromRepository({! defsToParams(array_merge([$id], $required)) !}) {
-    return static::from({! defsToArgs(array_merge([$id], $required)) !});
+  public static function fromRepository({! defsToParams(array_merge([$id], $required, $optional), true) !}) {
+    $entity = static::from({! defsToArgs(array_merge([$id], $required)) !});
+
+@each($optional as $def)
+    $entity->{! $def->alias !} = ${! $def->alias !};
+@endeach
+
+    return $entity;
   }
 
   /**
