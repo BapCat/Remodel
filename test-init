@@ -18,7 +18,7 @@ $ioc = Phi::instance();
 $persist = new LocalDriver(__DIR__);
 $cache   = $persist->getDirectory('/cache');
 
-$pdo = new PDO('mysql:host=localhost;dbname=test', 'root', '');
+$pdo = new PDO('mysql:host=localhost;dbname=remodel', 'remodel', 'remodel');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);

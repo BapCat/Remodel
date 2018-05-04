@@ -7,9 +7,13 @@ use BapCat\Nom\NomTransformer;
 use BapCat\Nom\Pipeline;
 use BapCat\Persist\Directory;
 use BapCat\Persist\Drivers\Local\LocalDriver;
+use BapCat\Persist\NotADirectoryException;
 use BapCat\Tailor\Generator;
 use BapCat\Tailor\Tailor;
 
+/**
+ * Remodel entity registry
+ */
 class Registry {
   const CLASS_SUFFIXES = ['Id', 'Gateway', 'Repository', 'NotFoundException'];
   
@@ -32,10 +36,12 @@ class Registry {
    * @var  EntityDefinition[]  $unchecked
    */
   private $unchecked = [];
-  
+
   /**
    * @param  Ioc        $ioc
    * @param  Directory  $cache  Where to cache generated classes
+   *
+   * @throws  NotADirectoryException  If `$cache` is not a directory
    */
   public function __construct(Ioc $ioc, Directory $cache) {
     $this->ioc = $ioc;

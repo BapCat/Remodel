@@ -2,16 +2,29 @@
 
 use Doctrine\DBAL\Driver as DoctrineDriver;
 use Illuminate\Database\Connection;
-use Illuminate\Database\Grammar;
+use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 
 use DateTime;
+use Illuminate\Database\Schema\Builder;
 use PDO;
 
+/**
+ * A flexible Illuminate connection customized for Remodel
+ */
 class RemodelConnection extends Connection {
+  /** @var  string  $builder */
   private $builder;
+
+  /** @var  DoctrineDriver  $doctrine */
   private $doctrine;
-  
+
+  /**
+   * @param  PDO                  $pdo
+   * @param  Grammar              $grammar
+   * @param  Processor            $processor
+   * @param  DoctrineDriver|null  $doctrine
+   */
   public function __construct(PDO $pdo, Grammar $grammar, Processor $processor, DoctrineDriver $doctrine = null) {
     parent::__construct($pdo);
     $this->queryGrammar  = new GrammarWrapper($grammar);
@@ -19,11 +32,21 @@ class RemodelConnection extends Connection {
     
     $this->doctrine = $doctrine;
   }
-  
+
+  /**
+   * @param  string  $class  The fully-qualified class name of the schema builder
+   */
   public function setSchemaBuilderClass($class) {
     $this->builder = $class;
   }
 
+  /**
+   * @param  string  $query
+   * @param  array   $bindings
+   * @param  bool    $useReadPdo
+   *
+   * @return  array|mixed
+   */
   public function select($query, $bindings = [], $useReadPdo = true) {
     $types = [];
     
@@ -80,7 +103,12 @@ class RemodelConnection extends Connection {
     
     return $rows;
   }
-  
+
+  /**
+   * Get a schema builder instance for the connection
+   *
+   * @return  Builder
+   */
   public function getSchemaBuilder() {
     if(empty($this->builder)) {
       return parent::getSchemaBuilder();
@@ -89,7 +117,10 @@ class RemodelConnection extends Connection {
     $class = $this->builder;
     return new $class($this);
   }
-  
+
+  /**
+   * @return  DoctrineDriver|null
+   */
   protected function getDoctrineDriver() {
     return $this->doctrine;
   }
