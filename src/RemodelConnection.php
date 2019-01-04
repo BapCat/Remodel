@@ -63,15 +63,17 @@ class RemodelConnection extends Connection {
       for($i = 0; $i < $statement->columnCount(); $i++) {
         $meta = $statement->getColumnMeta($i);
 
-        $type = $meta['native_type'];
+        if($meta !== false) {
+          $type = $meta['native_type'];
 
-        if(isset($meta['sqlite:decl_type'])) {
-          if($meta['sqlite:decl_type'] === 'datetime') {
-            $type = $meta['sqlite:decl_type'];
+          if(isset($meta['sqlite:decl_type'])) {
+            if($meta['sqlite:decl_type'] === 'datetime') {
+              $type = $meta['sqlite:decl_type'];
+            }
           }
-        }
 
-        $types[$meta['name']] = strtolower($type);
+          $types[$meta['name']] = strtolower($type);
+        }
       }
 
       return $statement->fetchAll(PDO::FETCH_ASSOC);
