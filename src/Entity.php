@@ -4,5 +4,5 @@
  * An Entity
  */
 interface Entity {
-
+  public function cacheRelations(): void;
 }

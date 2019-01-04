@@ -20,6 +20,8 @@ use function BapCat\Remodel\pluralize;
 use BapCat\Phi\Ioc;
 use BapCat\Remodel\GatewayQuery;
 
+use function count;
+
 /**
  * Handles interactions between `<?= $name ?>`s and the database
  */
@@ -87,7 +89,7 @@ class <?= $name ?>Repository {
     $this->entity  = <?= $name ?>::class;
     $this->gateway = $gateway;
 
-    $this->scope_callbacks = $ioc->make("bap.remodel.scopes.<?= str_replace('\\', '.', $namespace) ?>.<?= $name ?>");
+    $this->scope_callbacks = $ioc->make('bap.remodel.scopes.<?= str_replace('\\', '.', $namespace) ?>.<?= $name ?>');
   }
 
   /**

@@ -33,7 +33,7 @@ class <?= $name ?>Gateway {
   /** @var  array  $TYPES */
   protected static $TYPES = [
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
-    '<?= $def->raw ?>' => '<?= $def->type ?>',
+    '<?= $def->raw ?>' => <?= $def->type ?>::class,
 <?php endforeach; ?>
   ];
 
@@ -41,7 +41,7 @@ class <?= $name ?>Gateway {
   private $connection;
 
   /** @var  array  $scopes */
-  private $scopes = [];
+  private $scopes;
 
   /**
    * @param  ConnectionInterface  $connection
@@ -50,7 +50,7 @@ class <?= $name ?>Gateway {
     $this->connection = $connection;
 
     $ioc = Ioc::instance();
-    $this->scopes = $ioc->make("bap.remodel.scopes.{! str_replace('\\', '.', $namespace) !}.{! $name !}");
+    $this->scopes = $ioc->make('bap.remodel.scopes.{! str_replace('\\', '.', $namespace) !}.{! $name !}');
   }
 
   /**

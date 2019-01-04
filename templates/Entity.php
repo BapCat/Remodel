@@ -85,7 +85,7 @@ use JsonSerializable;
 class {! $name !} implements Entity, JsonSerializable {
   use PropifierTrait;
 
-  const ID_NAME = '{! $id->alias !}';
+  public const ID_NAME = '{! $id->alias !}';
 
   /** @var  Ioc  $ioc */
   private $ioc;
@@ -254,7 +254,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  \{! $relation->foreign_entity !}[]
    */
   protected function get{! @camelize($relation->alias) !}(): array {
-    if(isset($this->cache_{! $relation->alias !})) {
+    if($this->cache_{! $relation->alias !} !== null) {
       return $this->cache_{! $relation->alias !};
     }
 
@@ -341,13 +341,13 @@ class {! $name !} implements Entity, JsonSerializable {
     ];
 
 @each($has_many as $relation)
-    if(isset($this->cache_{! $relation->alias !})) {
+    if($this->cache_{! $relation->alias !} !== null) {
       $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
     }
 @endeach
 
 @each($has_many_through as $relation)
-    if(isset($this->cache_{! $relation->alias !})) {
+    if($this->cache_{! $relation->alias !} !== null) {
       $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
     }
 @endeach
