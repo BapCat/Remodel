@@ -1,8 +1,9 @@
-<?php namespace BapCat\Remodel;
+<?php declare(strict_types=1); namespace BapCat\Remodel;
 
 use BapCat\Values\Timestamp;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
@@ -43,6 +44,7 @@ use Illuminate\Support\Collection;
  * @method self limit(int $value)
  * @method string toSql()
  * @method Collection get(string[] $columns = ['*'])
+ * @method Model|object|self|null first(string[] $columns = ['*'])
  * @method bool exists()
  * @method bool doesntExist()
  * @method int count(string $columns = '*')
@@ -52,6 +54,7 @@ use Illuminate\Support\Collection;
  * @method int avg(string $column)
  * @method int average(string $column)
  * @method int delete(?mixed $id = null)
+ * @method mixed|self find(int $id, array $columns = ['*'])
  */
 class GatewayQuery {
   /** @var  Builder  $builder */
@@ -59,9 +62,6 @@ class GatewayQuery {
 
   /** @var  GrammarWrapper  $grammar */
   private $grammar;
-
-  /** @var  array  $to_db */
-  private $to_db;
 
   /** @var  array  $types */
   private $types;
@@ -76,25 +76,24 @@ class GatewayQuery {
    * @param  array                $types
    * @param  array                $scopes
    */
-  public function __construct(ConnectionInterface $connection, $table, array $to_db, array $types, array $scopes) {
+  public function __construct(ConnectionInterface $connection, string $table, array $to_db, array $types, array $scopes) {
     $this->grammar = $connection->getQueryGrammar();
     $this->grammar->to_db = $to_db;
-    
-    $this->to_db = $to_db;
+
     $this->types = $types;
     $this->scopes = $scopes;
-    
+
     $this->builder = $connection->table($table);
   }
 
   /**
    * Insert a new record into the database
    *
-   * @param  array  $values
+   * @param  mixed[]  $values
    *
    * @return  bool
    */
-  public function insert(array $values) {
+  public function insert(array $values): bool {
     $this->coerceDataTypesToDatabase($values);
     return $this->builder->insert($values);
   }
@@ -102,11 +101,11 @@ class GatewayQuery {
   /**
    * Insert a new record and get the value of the primary key
    *
-   * @param  array  $values
+   * @param  mixed[]  $values
    *
    * @return  int
    */
-  public function insertGetId(array $values) {
+  public function insertGetId(array $values): int {
     $this->coerceDataTypesToDatabase($values);
     return $this->builder->insertGetId($values);
   }
@@ -114,11 +113,11 @@ class GatewayQuery {
   /**
    * Update a record in the database
    *
-   * @param  array  $values
+   * @param  mixed[]  $values
    *
    * @return  int
    */
-  public function update(array $values) {
+  public function update(array $values): int {
     $this->coerceDataTypesToDatabase($values);
     return $this->builder->update($values);
   }
@@ -126,11 +125,11 @@ class GatewayQuery {
   /**
    * Insert or replace a record in the database
    *
-   * @param  array  $values
+   * @param  mixed[]  $values
    *
-   * @return  int
+   * @return  bool
    */
-  public function replace(array $values) {
+  public function replace(array $values): bool {
     $this->grammar->replace();
     return $this->insert($values);
   }
@@ -138,19 +137,21 @@ class GatewayQuery {
   /**
    * Insert or replace a record and get the value of the primary key
    *
-   * @param  array  $values
+   * @param  mixed[]  $values
    *
    * @return  int
    */
-  public function replaceGetId(array $values) {
+  public function replaceGetId(array $values): int {
     $this->grammar->replace();
     return $this->insertGetId($values);
   }
 
   /**
-   * @param  array  $row
+   * @param  mixed[]  $row
+   *
+   * @return  void
    */
-  private function coerceDataTypesToDatabase(array &$row) {
+  private function coerceDataTypesToDatabase(array &$row): void {
     foreach($row as $col => &$value) {
       if(array_key_exists($col, $this->types)) {
         switch($this->types[$col]) {
@@ -174,11 +175,11 @@ class GatewayQuery {
     } else {
       $return = $this->builder->$name(...$arguments);
     }
-    
+
     if($return === $this->builder) {
       return $this;
     }
-    
+
     return $return;
   }
 }

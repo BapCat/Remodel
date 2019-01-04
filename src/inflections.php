@@ -1,4 +1,4 @@
-<?php namespace BapCat\Remodel;
+<?php declare(strict_types=1); namespace BapCat\Remodel;
 
 use ICanBoogie\Inflector;
 
@@ -7,7 +7,7 @@ use ICanBoogie\Inflector;
  *
  * @return  string
  */
-function titleize($input) {
+function titleize(string $input): string {
   return Inflector::get()->titleize($input);
 }
 
@@ -17,7 +17,7 @@ function titleize($input) {
  *
  * @return  string
  */
-function camelize($input, $lowercase_first = false) {
+function camelize(string $input, bool $lowercase_first = false): string {
   return Inflector::get()->camelize($input, $lowercase_first ? Inflector::DOWNCASE_FIRST_LETTER : Inflector::UPCASE_FIRST_LETTER);
 }
 
@@ -26,7 +26,7 @@ function camelize($input, $lowercase_first = false) {
  *
  * @return  string
  */
-function underscore($input) {
+function underscore(string $input): string {
   return Inflector::get()->underscore($input);
 }
 
@@ -35,7 +35,7 @@ function underscore($input) {
  *
  * @return  string
  */
-function pluralize($input) {
+function pluralize(string $input): string {
   return Inflector::get()->pluralize($input);
 }
 
@@ -44,7 +44,7 @@ function pluralize($input) {
  *
  * @return  string
  */
-function singularize($input) {
+function singularize(string $input): string {
   return Inflector::get()->singularize($input);
 }
 
@@ -53,7 +53,7 @@ function singularize($input) {
  *
  * @return  string
  */
-function humanize($input) {
+function humanize(string $input): string {
   return Inflector::get()->humanize($input);
 }
 
@@ -62,7 +62,7 @@ function humanize($input) {
  *
  * @return  string
  */
-function short($class_name) {
+function short(string $class_name): string {
   $parts = explode('\\', $class_name);
   return array_pop($parts);
 }
@@ -72,6 +72,6 @@ function short($class_name) {
  *
  * @return  string
  */
-function keyify($name) {
+function keyify(string $name): string {
   return underscore($name) . '_id';
 }

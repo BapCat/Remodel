@@ -1,4 +1,4 @@
-<?php namespace BapCat\Remodel;
+<?php declare(strict_types=1); namespace BapCat\Remodel;
 
 use Doctrine\DBAL\Driver as DoctrineDriver;
 use Illuminate\Database\Connection;
@@ -25,18 +25,20 @@ class RemodelConnection extends Connection {
    * @param  Processor            $processor
    * @param  DoctrineDriver|null  $doctrine
    */
-  public function __construct(PDO $pdo, Grammar $grammar, Processor $processor, DoctrineDriver $doctrine = null) {
+  public function __construct(PDO $pdo, Grammar $grammar, Processor $processor, ?DoctrineDriver $doctrine = null) {
     parent::__construct($pdo);
     $this->queryGrammar  = new GrammarWrapper($grammar);
     $this->postProcessor = $processor;
-    
+
     $this->doctrine = $doctrine;
   }
 
   /**
    * @param  string  $class  The fully-qualified class name of the schema builder
+   *
+   * @return  void
    */
-  public function setSchemaBuilderClass($class) {
+  public function setSchemaBuilderClass(string $class): void {
     $this->builder = $class;
   }
 
@@ -49,32 +51,32 @@ class RemodelConnection extends Connection {
    */
   public function select($query, $bindings = [], $useReadPdo = true) {
     $types = [];
-    
+
     $rows = $this->run($query, $bindings, function($query, $bindings) use($useReadPdo, &$types) {
       if($this->pretending()) {
         return [];
       }
-      
+
       $statement = $this->getPdoForSelect($useReadPdo)->prepare($query);
       $statement->execute($this->prepareBindings($bindings));
-      
+
       for($i = 0; $i < $statement->columnCount(); $i++) {
         $meta = $statement->getColumnMeta($i);
-        
+
         $type = $meta['native_type'];
-        
+
         if(isset($meta['sqlite:decl_type'])) {
-          if($meta['sqlite:decl_type'] == 'datetime') {
+          if($meta['sqlite:decl_type'] === 'datetime') {
             $type = $meta['sqlite:decl_type'];
           }
         }
-        
+
         $types[$meta['name']] = strtolower($type);
       }
-      
+
       return $statement->fetchAll(PDO::FETCH_ASSOC);
     });
-    
+
     foreach($rows as &$row) {
       foreach($row as $col => &$value) {
         if($value !== null) {
@@ -83,11 +85,11 @@ class RemodelConnection extends Connection {
             case 'integer':
               $value = (int)$value;
             break;
-            
+
             case 'double':
               $value = (float)$value;
             break;
-            
+
             case 'timestamp':
             case 'datetime':
               if(strpos($value, '.') === false) {
@@ -100,7 +102,7 @@ class RemodelConnection extends Connection {
         }
       }
     }
-    
+
     return $rows;
   }
 
@@ -113,7 +115,7 @@ class RemodelConnection extends Connection {
     if(empty($this->builder)) {
       return parent::getSchemaBuilder();
     }
-    
+
     $class = $this->builder;
     return new $class($this);
   }
@@ -121,7 +123,7 @@ class RemodelConnection extends Connection {
   /**
    * @return  DoctrineDriver|null
    */
-  protected function getDoctrineDriver() {
+  protected function getDoctrineDriver(): ?DoctrineDriver {
     return $this->doctrine;
   }
 }

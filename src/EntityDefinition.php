@@ -1,4 +1,4 @@
-<?php namespace BapCat\Remodel;
+<?php declare(strict_types=1); namespace BapCat\Remodel;
 
 use BapCat\Remodel\Relations\HasManyThrough;
 use BapCat\Remodel\Relations\ManyToMany;
@@ -6,9 +6,6 @@ use BapCat\Remodel\Relations\Relation;
 
 use BapCat\Propifier\PropifierTrait;
 use BapCat\Values\Timestamp;
-
-use function BapCat\Remodel\pluralize;
-use function BapCat\Remodel\underscore;
 
 /**
  * An entity builder
@@ -68,9 +65,9 @@ class EntityDefinition {
   /**
    * @param  string  $name  The fully-qualified name of the `Entity` class
    */
-  public function __construct($name) {
+  public function __construct(string $name) {
     $split = explode('\\', $name);
-    
+
     $this->full_name = $name;
     $this->name = array_pop($split);
     $this->namespace = implode('\\', $split);
@@ -85,7 +82,7 @@ class EntityDefinition {
    *
    * @return  void
    */
-  public function table($table) {
+  public function table(string $table): void {
     $this->table = $table;
   }
 
@@ -96,7 +93,7 @@ class EntityDefinition {
    *
    * @return  EntityDefinitionOptions
    */
-  public function id($type) {
+  public function id(string $type): EntityDefinitionOptions {
     return $this->id = new EntityDefinitionOptions('id', $type);
   }
 
@@ -108,7 +105,7 @@ class EntityDefinition {
    *
    * @return  EntityDefinitionOptions  Options for the column
    */
-  public function required($alias, $type) {
+  public function required(string $alias, string $type): EntityDefinitionOptions {
     return $this->required[$alias] = new EntityDefinitionOptions($alias, $type);
   }
 
@@ -120,7 +117,7 @@ class EntityDefinition {
    *
    * @return  EntityDefinitionOptions  Options for the column
    */
-  public function optional($alias, $type) {
+  public function optional(string $alias, string $type): EntityDefinitionOptions {
     return $this->optional[$alias] = new EntityDefinitionOptions($alias, $type);
   }
 
@@ -129,7 +126,7 @@ class EntityDefinition {
    *
    * @return  void
    */
-  public function timestamps() {
+  public function timestamps(): void {
     $this->optional('created_at', Timestamp::class)->readOnly();
     $this->optional('updated_at', Timestamp::class)->readOnly();
   }
@@ -142,7 +139,7 @@ class EntityDefinition {
    *
    * @return  Relation  Options for the relation
    */
-  public function hasMany($alias, $entity) {
+  public function hasMany(string $alias, string $entity): Relation {
     return $this->has_many[$entity] = new Relation($alias, $this->full_name, $entity);
   }
 
@@ -155,7 +152,7 @@ class EntityDefinition {
    *
    * @return  HasManyThrough  Options for the relation
    */
-  public function hasManyThrough($alias, $entity_join, $entity_foreign) {
+  public function hasManyThrough(string $alias, string $entity_join, string $entity_foreign): HasManyThrough {
     return $this->has_many_through[] = new HasManyThrough($alias, $entity_join, $entity_foreign);
   }
 
@@ -167,7 +164,7 @@ class EntityDefinition {
    *
    * @return  Relation  Options for the relation
    */
-  public function belongsTo($alias, $entity) {
+  public function belongsTo(string $alias, string $entity): Relation {
     return $this->belongs_to[$entity] = new Relation($alias, $this->full_name, $entity);
   }
 
@@ -182,7 +179,7 @@ class EntityDefinition {
    *
    * @return  ManyToMany  Options for the relation
    */
-  public function associates($alias_join, $alias_left, $entity_left, $alias_right, $entity_right) {
+  public function associates(string $alias_join, string $alias_left, string $entity_left, string $alias_right, string $entity_right): ManyToMany {
     return $this->many_to_many[] = new ManyToMany($alias_join, $alias_left, $this->full_name, $entity_left, $alias_right, $entity_right);
   }
 
@@ -196,98 +193,98 @@ class EntityDefinition {
    *
    * @return  void
    */
-  public function scope($name, callable $callback) {
+  public function scope(string $name, callable $callback): void {
     $this->scopes[$name] = $callback;
   }
 
   /**
    * @return  string
    */
-  protected function getFullName() {
+  protected function getFullName(): string {
     return $this->full_name;
   }
 
   /**
    * @return  string
    */
-  protected function getName() {
+  protected function getName(): string {
     return $this->name;
   }
 
   /**
    * @return  string
    */
-  protected function getNamespace() {
+  protected function getNamespace(): string {
     return $this->namespace;
   }
 
   /**
    * @return  string
    */
-  protected function getTable() {
+  protected function getTable(): string {
     return $this->table;
   }
 
   /**
    * @return  EntityDefinitionOptions
    */
-  protected function getId() {
+  protected function getId(): EntityDefinitionOptions {
     return $this->id;
   }
 
   /**
    * @return  EntityDefinitionOptions[]
    */
-  protected function getRequired() {
+  protected function getRequired(): array {
     return $this->required;
   }
 
   /**
    * @return  EntityDefinitionOptions[]
    */
-  protected function getOptional() {
+  protected function getOptional(): array {
     return $this->optional;
   }
 
   /**
    * @return  Relation[]
    */
-  protected function getHasMany() {
+  protected function getHasMany(): array {
     return $this->has_many;
   }
 
   /**
    * @return  HasManyThrough[]
    */
-  protected function getHasManyThrough() {
+  protected function getHasManyThrough(): array {
     return $this->has_many_through;
   }
 
   /**
    * @return  Relation[]
    */
-  protected function getBelongsTo() {
+  protected function getBelongsTo(): array {
     return $this->belongs_to;
   }
 
   /**
    * @return  ManyToMany[]
    */
-  protected function getManyToMany() {
+  protected function getManyToMany(): array {
     return $this->many_to_many;
   }
 
   /**
    * @return  callable[]
    */
-  protected function getScopes() {
+  protected function getScopes(): array {
     return $this->scopes;
   }
 
   /**
    * @return  array
    */
-  public function toArray() {
+  public function toArray(): array {
     return [
       'namespace'  => $this->namespace,
       'name'       => $this->name,

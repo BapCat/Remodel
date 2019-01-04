@@ -1,9 +1,11 @@
-<?php namespace BapCat\Remodel;
+<?php declare(strict_types=1); namespace BapCat\Remodel;
 
 use BapCat\Propifier\PropifierTrait;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+
+use function is_string;
 
 /**
  * A wrapper for Illuminate's Grammar class
@@ -14,7 +16,7 @@ class GrammarWrapper extends Grammar {
   /** @var  Grammar  $grammar */
   private $grammar;
 
-  /** @var  array  $to_db */
+  /** @var  mixed[]  $to_db */
   private $to_db = [];
 
   /** @var  bool  $replace_into */
@@ -29,15 +31,17 @@ class GrammarWrapper extends Grammar {
 
   /**
    * @param  array  $to_db
+   *
+   * @return  void
    */
-  protected function setToDb(array $to_db) {
+  protected function setToDb(array $to_db): void {
     $this->to_db = $to_db;
   }
 
   /**
    * @return  Grammar
    */
-  public function getOriginalGrammar() {
+  public function getOriginalGrammar(): Grammar {
     return $this->grammar;
   }
 
@@ -46,7 +50,7 @@ class GrammarWrapper extends Grammar {
    *
    * @return  void
    */
-  public function replace() {
+  public function replace(): void {
     $this->replace_into = true;
   }
 
@@ -59,8 +63,7 @@ class GrammarWrapper extends Grammar {
    */
   public function compileSelect(Builder $query) {
     $this->beforeGet($query);
-    $sql = $this->grammar->compileSelect($query);
-    return $sql;
+    return $this->grammar->compileSelect($query);
   }
 
   /**
@@ -78,7 +81,7 @@ class GrammarWrapper extends Grammar {
    * Compile an insert statement into SQL
    *
    * @param  Builder  $query
-   * @param  array    $values
+   * @param  mixed[]  $values
    *
    * @return  string
    */
@@ -86,15 +89,17 @@ class GrammarWrapper extends Grammar {
     foreach($values as &$row) {
       $this->beforePut($row);
     }
-    
+
+    unset($row);
+
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsert($query, $values);
-    
+
     if($this->replace_into) {
       $sql = preg_replace('/^insert into/i', 'replace into', $sql);
       $this->replace_into = false;
     }
-    
+
     return $sql;
   }
 
@@ -102,7 +107,7 @@ class GrammarWrapper extends Grammar {
    * Compile an insert and get ID statement into SQL
    *
    * @param  Builder  $query
-   * @param  array    $values
+   * @param  mixed[]  $values
    * @param  string   $sequence
    *
    * @return  string
@@ -111,12 +116,12 @@ class GrammarWrapper extends Grammar {
     $this->beforePut($values);
     $this->remapWheres($query);
     $sql = $this->grammar->compileInsertGetId($query, $values, $sequence);
-    
+
     if($this->replace_into) {
       $sql = preg_replace('/^insert into/i', 'replace into', $sql);
       $this->replace_into = false;
     }
-    
+
     return $sql;
   }
 
@@ -193,7 +198,7 @@ class GrammarWrapper extends Grammar {
    *
    * @return  void
    */
-  private function beforeGet(Builder $builder) {
+  private function beforeGet(Builder $builder): void {
     $this->remapBuilderColumns($builder);
     $this->remapWheres($builder);
   }
@@ -203,15 +208,17 @@ class GrammarWrapper extends Grammar {
    *
    * @return  void
    */
-  private function beforePut(array &$values) {
+  private function beforePut(array &$values): void {
     $keys = array_keys($values);
-    
+
     foreach($keys as &$column) {
       if(array_key_exists($column, $this->to_db)) {
         $column = $this->to_db[$column];
       }
     }
-    
+
+    unset($column);
+
     $values = array_combine($keys, array_values($values));
   }
 
@@ -220,22 +227,22 @@ class GrammarWrapper extends Grammar {
    *
    * @return  void
    */
-  private function remapBuilderColumns(Builder $builder) {
+  private function remapBuilderColumns(Builder $builder): void {
     if($builder->aggregate === null) {
       if($builder->columns === ['*']) {
         $builder->columns = array_keys($this->to_db);
       }
-      
+
       if(is_string($builder->columns)) {
         $builder->columns = [$builder->columns];
       }
-      
+
       $this->remapColumns($builder->columns);
     } else {
       if($builder->aggregate['columns'] == ['*']) {
         return;
       }
-      
+
       $this->remapColumns($builder->aggregate['columns'], false);
     }
   }
@@ -246,9 +253,9 @@ class GrammarWrapper extends Grammar {
    *
    * @return  void
    */
-  private function remapColumns(array &$columns, $alias = true) {
+  private function remapColumns(array &$columns, $alias = true): void {
     foreach($columns as &$column) {
-      if($this->to_db[$column] != $column) {
+      if($this->to_db[$column] !== $column) {
         if($alias) {
           $column = $this->to_db[$column] . ' as ' . $column;
         } else {
@@ -263,7 +270,7 @@ class GrammarWrapper extends Grammar {
    *
    * @return  void
    */
-  private function remapWheres(Builder $builder) {
+  private function remapWheres(Builder $builder): void {
     if($builder->wheres !== null) {
       foreach($builder->wheres as &$where) {
         if(array_key_exists($where['column'], $this->to_db)) {

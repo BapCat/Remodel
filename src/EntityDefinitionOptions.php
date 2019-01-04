@@ -1,4 +1,4 @@
-<?php namespace BapCat\Remodel;
+<?php declare(strict_types=1); namespace BapCat\Remodel;
 
 use BapCat\Propifier\PropifierTrait;
 
@@ -29,7 +29,7 @@ class EntityDefinitionOptions {
    * @param  string  $alias
    * @param  string  $type
    */
-  public function __construct($alias, $type) {
+  public function __construct(string $alias, string $type) {
     $this->alias = $alias;
     $this->type  = $type;
     $this->raw   = $alias;
@@ -42,7 +42,7 @@ class EntityDefinitionOptions {
    *
    * @return  self
    */
-  public function mapsTo($raw) {
+  public function mapsTo(string $raw): self {
     $this->raw = $raw;
     return $this;
   }
@@ -52,7 +52,7 @@ class EntityDefinitionOptions {
    *
    * @return  self
    */
-  public function readOnly() {
+  public function readOnly(): self {
     $this->read_only = true;
     return $this;
   }
@@ -60,28 +60,28 @@ class EntityDefinitionOptions {
   /**
    * @return  string
    */
-  protected function getAlias() {
+  protected function getAlias(): string {
     return $this->alias;
   }
 
   /**
    * @return  string
    */
-  protected function getType() {
+  protected function getType(): string {
     return $this->type;
   }
 
   /**
    * @return  string
    */
-  protected function getRaw() {
+  protected function getRaw(): string {
     return $this->raw;
   }
 
   /**
    * @return  bool
    */
-  protected function getReadOnly() {
+  protected function getReadOnly(): bool {
     return $this->read_only;
   }
 }

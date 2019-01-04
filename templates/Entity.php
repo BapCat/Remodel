@@ -1,4 +1,5 @@
-@php namespace {! $namespace !};
+<?php declare(strict_types=1); ?>
+@php declare(strict_types=1); namespace {! $namespace !};
 
 <?php
 
@@ -11,7 +12,7 @@ if(!function_exists('defToParam')) {
    *
    * @return  string
    */
-  function defToParam(EntityDefinitionOptions $def, $nullable = false) {
+  function defToParam(EntityDefinitionOptions $def, bool $nullable = false): string {
     return "\\{$def->type} \${$def->alias}" . ($nullable ? ' = null' : '');
   }
 
@@ -19,9 +20,9 @@ if(!function_exists('defToParam')) {
    * @param  EntityDefinitionOptions[]  $defs
    * @param  bool                       $nullable
    *
-   * @return string
+   * @return  string
    */
-  function defsToParams(array $defs, $nullable = false) {
+  function defsToParams(array $defs, bool $nullable = false): string {
     return implode(', ', array_map(function(EntityDefinitionOptions $def) use($nullable) {
       return defToParam($def, $nullable);
     }, $defs));
@@ -32,7 +33,7 @@ if(!function_exists('defToParam')) {
    *
    * @return  string
    */
-  function defToArg(EntityDefinitionOptions $def) {
+  function defToArg(EntityDefinitionOptions $def): string {
     return "\${$def->alias}";
   }
 
@@ -41,7 +42,7 @@ if(!function_exists('defToParam')) {
    *
    * @return  string
    */
-  function defsToArgs(array $defs) {
+  function defsToArgs(array $defs): string {
     return implode(', ', array_map(function(EntityDefinitionOptions $def) {
       return defToArg($def);
     }, $defs));
@@ -50,7 +51,7 @@ if(!function_exists('defToParam')) {
 
 ?>
 
-use BapCat\Interfaces\Ioc\Ioc;
+use BapCat\Phi\Ioc;
 use BapCat\Propifier\PropifierTrait;
 use BapCat\Remodel\Entity;
 
@@ -120,7 +121,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  {! $name !}
 
    */
-  public static function create({! defsToParams($required) !}) {
+  public static function create({! defsToParams($required) !}): {! $name !} {
     return self::make(null, {! defsToArgs($required) !});
   }
 
@@ -135,7 +136,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  {! $name !}
 
    */
-  public static function from({! defsToParams(array_merge([$id], $required)) !}) {
+  public static function from({! defsToParams(array_merge([$id], $required)) !}): {! $name !} {
     return self::make({! defsToArgs(array_merge([$id], $required)) !});
   }
 
@@ -150,7 +151,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  {! $name !}
 
    */
-  public static function fromRepository({! defsToParams(array_merge([$id], $required, $optional), true) !}) {
+  public static function fromRepository({! defsToParams(array_merge([$id], $required, $optional), true) !}): {! $name !} {
     $entity = static::from({! defsToArgs(array_merge([$id], $required)) !});
 
 @each($optional as $def)
@@ -171,12 +172,12 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  {! $name !}
 
    */
-  private static function make({! defsToParams(array_merge([$id], $required, $optional), true) !}) {
+  private static function make({! defsToParams(array_merge([$id], $required, $optional), true) !}): {! $name !} {
     $entity = new {! $name !}();
 @each(array_merge([$id], $required, $optional) as $def)
     $entity->{! $def->alias !} = ${! $def->alias !};
 @endeach
-    
+
     return $entity;
   }
 
@@ -186,18 +187,18 @@ class {! $name !} implements Entity, JsonSerializable {
    *
    * @return  void
    */
-  public function cacheRelations() {
+  public function cacheRelations(): void {
 @each($has_many as $relation)
     $this->cache_{! $relation->alias !} = $this->{! $relation->alias !};
-    
+
     foreach($this->cache_{! $relation->alias !} as $entity) {
       $entity->cacheRelations();
     }
 @endeach
-    
+
 @each($has_many_through as $relation)
     $this->cache_{! $relation->alias !} = $this->{! $relation->alias !};
-    
+
     foreach($this->cache_{! $relation->alias !} as $entity) {
       $entity->cacheRelations();
     }
@@ -209,7 +210,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  \{! $def->type !}
 
    */
-  protected function get{! @camelize($def->alias) !}() {
+  protected function get{! @camelize($def->alias) !}(): ?\{! $def->type !} {
     return $this->{! $def->alias !};
   }
 @if(!$def->read_only)
@@ -220,7 +221,7 @@ class {! $name !} implements Entity, JsonSerializable {
    *
    * @return  void
    */
-  protected function set{! @camelize($def->alias) !}({! defToParam($def) !}) {
+  protected function set{! @camelize($def->alias) !}({! defToParam($def) !}): void {
     $this->{! $def->alias !} = ${! $def->alias !};
   }
 @endif
@@ -231,7 +232,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  \{! $def->type !}
 
    */
-  protected function get{! @camelize($def->alias) !}() {
+  protected function get{! @camelize($def->alias) !}(): ?\{! $def->type !} {
     return $this->{! $def->alias !};
   }
 @if(!$def->read_only)
@@ -242,7 +243,7 @@ class {! $name !} implements Entity, JsonSerializable {
    *
    * @return  void
    */
-  protected function set{! @camelize($def->alias) !}({! defToParam($def, true) !}) {
+  protected function set{! @camelize($def->alias) !}({! defToParam($def, true) !}): void {
     $this->{! $def->alias !} = ${! $def->alias !};
   }
 @endif
@@ -252,7 +253,7 @@ class {! $name !} implements Entity, JsonSerializable {
   /**
    * @return  \{! $relation->foreign_entity !}[]
    */
-  protected function get{! @camelize($relation->alias) !}() {
+  protected function get{! @camelize($relation->alias) !}(): array {
     if(isset($this->cache_{! $relation->alias !})) {
       return $this->cache_{! $relation->alias !};
     }
@@ -267,7 +268,7 @@ class {! $name !} implements Entity, JsonSerializable {
   /**
    * @return  \{! $relation->entity_foreign !}[]
    */
-  protected function get{! @camelize($relation->alias) !}() {
+  protected function get{! @camelize($relation->alias) !}(): array {
     /** @var  \{! $relation->entity_join !}Gateway  $gateway */
     $gateway = $this->ioc->make(\{! $relation->entity_join !}Gateway::class);
     $ids = array_column($gateway->query()->select('{! $relation->key_foreign !}')->where('{! $relation->key_local !}', $this->{! $relation->id_local !})->get()->all(), '{! $relation->key_foreign !}');
@@ -285,7 +286,7 @@ class {! $name !} implements Entity, JsonSerializable {
    * @return  \{! $relation->foreign_entity !}
 
    */
-  protected function get{! @camelize($relation->alias) !}() {
+  protected function get{! @camelize($relation->alias) !}(): \{! $relation->foreign_entity !} {
     /** @var  \{! $relation->foreign_entity !}Repository  $repo */
     $repo = $this->ioc->make(\{! $relation->foreign_entity !}Repository::class);
     return $repo->with{! @camelize($relation->foreign_key) !}($this->{! $relation->local_key !})->first();
@@ -298,7 +299,7 @@ class {! $name !} implements Entity, JsonSerializable {
    *
    * @return  void
    */
-  public function save() {
+  public function save(): void {
     /** @var  {! $name !}Repository  $repo */
     $repo = $this->ioc->make({! $name !}Repository::class);
     $repo->save($this);
@@ -310,7 +311,7 @@ class {! $name !} implements Entity, JsonSerializable {
    *
    * @return  void
    */
-  public function delete() {
+  public function delete(): void {
     /** @var  {! $name !}Repository  $repo */
     $repo = $this->ioc->make({! $name !}Repository::class);
     $repo->withId($this->id)->delete();
@@ -319,38 +320,38 @@ class {! $name !} implements Entity, JsonSerializable {
   /**
    * @return  string
    */
-  public function __toString() {
+  public function __toString(): string {
     $output = '{! $namespace !}\{! $name !} ';
-    
+
     if($this->id === null) {
       return $output . '(new)';
     }
-    
+
     return $output . $this->id;
   }
 
   /**
    * @return  array
    */
-  public function jsonSerialize() {
+  public function jsonSerialize(): array {
     $output = [
 @each(array_merge([$id], $required, $optional) as $def)
       '{! $def->alias !}' => $this->{! $def->alias !},
 @endeach
     ];
-    
+
 @each($has_many as $relation)
     if(isset($this->cache_{! $relation->alias !})) {
       $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
     }
 @endeach
-    
+
 @each($has_many_through as $relation)
     if(isset($this->cache_{! $relation->alias !})) {
       $output['{! $relation->alias !}'] = $this->cache_{! $relation->alias !};
     }
 @endeach
-    
+
     return $output;
   }
 }

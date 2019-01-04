@@ -1,13 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @var  string  $namespace
  * @var  string  $name
  */
 ?>
 
-<<?= '?php' ?> namespace <?= $namespace ?>;
+<<?= '?php' ?> declare(strict_types=1); namespace <?= $namespace ?>;
 
-use BapCat\Interfaces\Values\Value;
+use BapCat\Values\Value;
 use InvalidArgumentException;
 
 /**
@@ -24,7 +24,7 @@ class <?= $name ?>Id extends Value {
    */
   public function __construct($id) {
     $this->validate($id);
-    $this->id = (integer)$id;
+    $this->id = (int)$id;
   }
 
   /**
@@ -34,7 +34,7 @@ class <?= $name ?>Id extends Value {
    *
    * @param  int  $id
    */
-  private function validate($id) {
+  private function validate($id): void {
     if(filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
       throw new InvalidArgumentException("Expected a valid ID, but got [$id] instead");
     }
@@ -43,21 +43,21 @@ class <?= $name ?>Id extends Value {
   /**
    * @return  string
    */
-  public function __toString() {
+  public function __toString(): string {
     return (string)$this->id;
   }
 
   /**
-   * @return  string
+   * @return  int
    */
-  public function jsonSerialize() {
+  public function jsonSerialize(): int {
     return $this->id;
   }
 
   /**
    * @return  int
    */
-  protected function getRaw() {
+  protected function getRaw(): int {
     return $this->id;
   }
 }

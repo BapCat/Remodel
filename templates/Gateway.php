@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @var  string                     $table
  * @var  string                     $namespace
@@ -12,9 +12,9 @@ use BapCat\Remodel\EntityDefinitionOptions;
 
 ?>
 
-<<?= '?php' ?> namespace <?= $namespace ?>;
+<<?= '?php' ?> declare(strict_types=1); namespace <?= $namespace ?>;
 
-use BapCat\Interfaces\Ioc\Ioc;
+use BapCat\Phi\Ioc;
 use BapCat\Remodel\GatewayQuery;
 
 use Illuminate\Database\ConnectionInterface;
@@ -48,7 +48,7 @@ class <?= $name ?>Gateway {
    */
   public function __construct(ConnectionInterface $connection) {
     $this->connection = $connection;
-    
+
     $ioc = Ioc::instance();
     $this->scopes = $ioc->make("bap.remodel.scopes.{! str_replace('\\', '.', $namespace) !}.{! $name !}");
   }
@@ -58,7 +58,7 @@ class <?= $name ?>Gateway {
    *
    * @return  GatewayQuery
    */
-  public function query() {
+  public function query(): GatewayQuery {
     return new GatewayQuery(
       $this->connection,
       '<?= $table ?>',

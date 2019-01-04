@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * @var  string                     $namespace
@@ -15,9 +15,9 @@ use function BapCat\Remodel\pluralize;
 
 ?>
 
-<<?= '?php' ?> namespace <?= $namespace ?>;
+<<?= '?php' ?> declare(strict_types=1); namespace <?= $namespace ?>;
 
-use BapCat\Interfaces\Ioc\Ioc;
+use BapCat\Phi\Ioc;
 use BapCat\Remodel\GatewayQuery;
 
 /**
@@ -95,7 +95,7 @@ class <?= $name ?>Repository {
    *
    * @return  void
    */
-  public function reset() {
+  public function reset(): void {
     $this->scopes    = [];
     $this->order_bys = [];
     $this->limit     = 0;
@@ -107,21 +107,21 @@ class <?= $name ?>Repository {
    *
    * @return  GatewayQuery
    */
-  private function buildQuery() {
+  private function buildQuery(): GatewayQuery {
     $query = $this
       ->gateway
       ->query()
       ->select(static::$SELECT_FIELDS)
     ;
-    
+
     foreach($this->scopes as $scope) {
       $query = $scope[0]($query, ...$scope[1]);
     }
-    
+
     foreach($this->order_bys as $order_by) {
       $query = $query->orderBy($order_by);
     }
-    
+
     return $query;
   }
 
@@ -133,7 +133,7 @@ class <?= $name ?>Repository {
    * @return  <?= $name ?>
 
    */
-  private function buildEntity(array $raw) {
+  private function buildEntity(array $raw): <?= $name ?> {
     $class_name = $this->entity;
 
     $params = [];
@@ -166,34 +166,34 @@ class <?= $name ?>Repository {
    *
    * @return  void
    */
-  public function save(<?= $name ?> $entity) {
+  public function save(<?= $name ?> $entity): void {
     $fields = [];
-    
+
     foreach(self::$REQUIRED as $alias => $type) {
       if(!in_array($alias, static::$READ_ONLY)) {
         $fields[$alias] = $entity->$alias;
-        
+
         if($fields[$alias] !== null) {
           $fields[$alias] = $fields[$alias]->raw;
         }
       }
     }
-    
+
     foreach(self::$OPTIONAL as $alias => $type) {
       if(!in_array($alias, static::$READ_ONLY)) {
         $fields[$alias] = $entity->$alias;
-        
+
         if($fields[$alias] !== null) {
           $fields[$alias] = $fields[$alias]->raw;
         }
       }
     }
-    
+
     $query = $this
       ->gateway
       ->query()
     ;
-    
+
     if($entity->id === null) {
       $entity->id = $this->ioc->make(\<?= $id->type ?>::class, [$query->insertGetId($fields)]);
     } else {
@@ -210,18 +210,18 @@ class <?= $name ?>Repository {
    *
    * @return  void
    */
-  public function delete() {
+  public function delete(): void {
     $query = $this
       ->gateway
       ->query()
     ;
-    
+
     foreach($this->scopes as $scope) {
       $query = $scope[0]($query, ...$scope[1]);
     }
-    
+
     $query->delete();
-    
+
     $this->reset();
   }
 <?php foreach(array_merge([$id], $required, $optional) as $def): ?>
@@ -233,11 +233,11 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $value) {
+  public function with<?= camelize($def->alias) ?>(\<?= $def->type ?> $value): self {
     $this->scopes[] = [function(GatewayQuery $query) use($value) {
       return $query->where('<?= $def->alias ?>', $value);
     }, []];
-    
+
     return $this;
   }
 
@@ -248,11 +248,11 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function orWith<?= camelize($def->alias) ?>(\<?= $def->type ?> $value) {
+  public function orWith<?= camelize($def->alias) ?>(\<?= $def->type ?> $value): self {
     $this->scopes[] = [function(GatewayQuery $query) use($value) {
       return $query->orWhere('<?= $def->alias ?>', $value);
     }, []];
-    
+
     return $this;
   }
 
@@ -263,11 +263,11 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function withMany<?= pluralize(camelize($def->alias)) ?>(array $values) {
+  public function withMany<?= pluralize(camelize($def->alias)) ?>(array $values): self {
     $this->scopes[] = [function(GatewayQuery $query) use($values) {
       return $query->whereIn('<?= $def->alias ?>', $values);
     }, []];
-    
+
     return $this;
   }
 
@@ -276,7 +276,7 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function orderBy<?= camelize($def->alias) ?>() {
+  public function orderBy<?= camelize($def->alias) ?>(): self {
     $this->order_bys[] = '<?= $def->alias ?>';
     return $this;
   }
@@ -290,7 +290,7 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function <?= $scope ?>(...$args) {
+  public function <?= $scope ?>(...$args): self {
     $this->scopes[] = [$this->scope_callbacks['<?= $scope ?>'], $args];
     return $this;
   }
@@ -303,7 +303,7 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function limit($count) {
+  public function limit(int $count): self {
     $this->limit = $count;
     return $this;
   }
@@ -314,7 +314,7 @@ class <?= $name ?>Repository {
    *
    * @return  self
    */
-  public function withRelations() {
+  public function withRelations(): self {
     $this->relations = true;
     return $this;
   }
@@ -324,23 +324,23 @@ class <?= $name ?>Repository {
    *
    * @return  <?= $name ?>[]
    */
-  public function get() {
+  public function get(): array {
     $raw = $this->buildQuery();
-    
+
     if($this->limit !== 0) {
       $raw = $raw->limit($this->limit);
     }
-    
+
     $raw = $raw->get();
-    
+
     $entities = [];
-    
+
     foreach($raw as $row) {
       $entities[] = $this->buildEntity($row);
     }
-    
+
     $this->reset();
-    
+
     return $entities;
   }
 
@@ -352,14 +352,14 @@ class <?= $name ?>Repository {
    * @return  <?= $name ?>
 
    */
-  public function first() {
+  public function first(): <?= $name ?> {
     $this->limit(1);
     $entities = $this->get();
-    
+
     if(count($entities) === 0) {
       throw new <?= $name ?>NotFoundException();
     }
-    
+
     return $entities[0];
   }
 }
