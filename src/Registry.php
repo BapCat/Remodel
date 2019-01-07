@@ -19,7 +19,7 @@ use function str_replace;
  * Remodel entity registry
  */
 class Registry {
-  private const CLASS_SUFFIXES = ['Id', 'Gateway', 'Repository', 'NotFoundException'];
+  public const CLASS_SUFFIXES = ['Id', 'Gateway', 'Repository', 'NotFoundException'];
 
   /** @var  Ioc  $ioc */
   private $ioc;
