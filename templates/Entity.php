@@ -3,7 +3,18 @@
 
 <?php
 
+/**
+ * @var  string                     $namespace
+ * @var  string                     $name
+ * @var  EntityDefinitionOptions    $id
+ * @var  EntityDefinitionOptions[]  $required
+ * @var  EntityDefinitionOptions[]  $optional
+ * @var  string[]                   $scopes
+ * @var  VirtualField[]             $virtuals
+ */
+
 use BapCat\Remodel\EntityDefinitionOptions;
+use BapCat\Remodel\VirtualField;
 
 if(!function_exists('defToParam')) {
   /**
@@ -81,6 +92,10 @@ use JsonSerializable;
  * @property-read  \{! $relation->foreign_entity !}[]  ${! $relation->alias !}
 
 @endeach
+@each($virtuals as $virtual)
+ * @property-read  \{! $virtual->type !}  ${! $virtual->alias !}
+
+@endeach
  */
 class {! $name !} implements Entity, JsonSerializable {
   use PropifierTrait;
@@ -105,8 +120,19 @@ class {! $name !} implements Entity, JsonSerializable {
   private $cache_{! $relation->alias !};
 @endeach
 
+  /** @var  mixed[][]  $virtuals */
+  private $virtuals = [];
+
+  /** @var  callable[]  $scope_callbacks */
+  private $virtual_callbacks = [];
+
   private function __construct() {
     $this->ioc = Ioc::instance();
+
+    $key = 'bap.remodel.virtuals.{! str_replace('\\', '.', $namespace) !}.{! $name !}.';
+@each($virtuals as $virtual)
+    $this->virtual_callbacks['{! $virtual->alias !}'] = $this->ioc->make($key . '{! $virtual->alias !}');
+@endeach
   }
 
   /**
@@ -128,7 +154,8 @@ class {! $name !} implements Entity, JsonSerializable {
   /**
    * Populate a {! $name !} from existing data (requires an ID)
    *
-@each(array_merge([$id], $required) as $def)
+   * @param  {! defToParam($id) !}
+@each($required as $def)
    * @param  {! defToParam($def) !}
 
 @endeach
@@ -143,7 +170,8 @@ class {! $name !} implements Entity, JsonSerializable {
   /**
    * For internal use only
    *
-@each(array_merge([$id], $required) as $def)
+   * @param  {! defToParam($id) !}
+@each($required as $def)
    * @param  {! defToParam($def) !}
 
 @endeach
@@ -247,6 +275,19 @@ class {! $name !} implements Entity, JsonSerializable {
     $this->{! $def->alias !} = ${! $def->alias !};
   }
 @endif
+@endeach
+@each($virtuals as $virtual)
+
+  /**
+   * Virtual field `{! $virtual->alias !}`
+   *
+   * @param  mixed[]  $args  Values to be passed to the virtual method
+   *
+   * @return  \{! $virtual->type !}
+   */
+  protected function get{! @camelize($virtual->alias) !}(): \{! $virtual->type !} {
+    return $this->virtual_callbacks['{! $virtual->alias !}']($this);
+  }
 @endeach
 @each($has_many as $relation)
 

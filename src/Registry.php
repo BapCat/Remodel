@@ -67,9 +67,16 @@ class Registry {
     $this->defs[$builder->full_name] = $builder;
     $this->unchecked[] = $builder;
 
-    $this->ioc->bind('bap.remodel.scopes.' . str_replace('\\', '.', $builder->full_name), function() use($builder) {
+    $binding_name = str_replace('\\', '.', $builder->full_name);
+    $this->ioc->bind('bap.remodel.scopes.' . $binding_name, function() use($builder) {
       return $builder->scopes;
     });
+
+    foreach($builder->virtuals as $virtual) {
+      $this->ioc->bind("bap.remodel.virtuals.{$binding_name}.{$virtual->alias}", function() use($virtual) {
+        return $virtual->callback;
+      });
+    }
 
     $this->tailor->bindCallback($builder->full_name, function(Generator $gen) use($builder): void {
       $this->checkDefinitions();

@@ -7,11 +7,13 @@
  * @var  EntityDefinitionOptions[]  $required
  * @var  EntityDefinitionOptions[]  $optional
  * @var  string[]                   $scopes
+ * @var  VirtualField[]             $virtuals
  */
 
 use BapCat\Remodel\EntityDefinitionOptions;
 use function BapCat\Remodel\camelize;
 use function BapCat\Remodel\pluralize;
+use BapCat\Remodel\VirtualField;
 
 ?>
 
@@ -35,7 +37,7 @@ class <?= $name ?>Repository {
   /** @var  <?= $name ?>Gateway  $gateway */
   private $gateway;
 
-  /** @var  array[]  $scopes */
+  /** @var  mixed[][]  $scopes */
   private $scopes = [];
 
   /** @var  string[]  $order_bys */
@@ -52,7 +54,8 @@ class <?= $name ?>Repository {
 
   /** @var  array  $REQUIRED */
   private static $REQUIRED = [
-<?php foreach(array_merge([$id], $required) as $def): ?>
+    '<?= $id->alias ?>' => \<?= $id->type ?>::class,
+<?php foreach($required as $def): ?>
     '<?= $def->alias ?>' => \<?= $def->type ?>::class,
 <?php endforeach; ?>
   ];
@@ -66,7 +69,11 @@ class <?= $name ?>Repository {
 
   /** @var  array  $SELECT_FIELDS */
   private static $SELECT_FIELDS = [
-<?php foreach(array_merge([$id], $required, $optional) as $def): ?>
+    '<?= $id->alias ?>',
+<?php foreach($required as $def): ?>
+    '<?= $def->alias ?>',
+<?php endforeach; ?>
+<?php foreach($optional as $def): ?>
     '<?= $def->alias ?>',
 <?php endforeach; ?>
   ];

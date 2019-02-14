@@ -51,6 +51,9 @@ $def = new EntityDefinition(User::class);
 $def->required('email', Email::class);
 $def->required('password', Password::class);
 $def->optional('butt', Text::class)->mapsTo('name');
+$def->virtual('a', Text::class, function(User $user): Text {
+  return new Text($user->email . ' ' . $user->password);
+});
 $def->hasMany('posts', Post::class)->foreignKey('creator_id');
 $def->timestamps();
 $def->scope('corey', function($query) {

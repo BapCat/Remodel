@@ -22,6 +22,7 @@ use BapCat\Values\Timestamp;
  * @property-read  Relation[]  $belongs_to
  * @property-read  ManyToMany[]  $many_to_many
  * @property-read  callable[]  $scopes
+ * @property-read  VirtualField[]  $virtuals
  */
 class EntityDefinition {
   use PropifierTrait;
@@ -61,6 +62,9 @@ class EntityDefinition {
 
   /** @var  callable[]  $scopes */
   private $scopes = [];
+
+  /** @var  VirtualField[]  $virtuals */
+  private $virtuals = [];
 
   /**
    * @param  string  $name  The fully-qualified name of the `Entity` class
@@ -198,6 +202,18 @@ class EntityDefinition {
   }
 
   /**
+   * Adds a virtual field to the `Entity`.  The `callable` will be executed whenever
+   * the virtual field is accessed, and passed the `Entity`.
+   *
+   * @param  string    $name
+   * @param  string    $type
+   * @param  callable  $callback
+   */
+  public function virtual(string $name, string $type, callable $callback): void {
+    $this->virtuals[$name] = new VirtualField($name, $type, $callback);
+  }
+
+  /**
    * @return  string
    */
   protected function getFullName(): string {
@@ -282,6 +298,13 @@ class EntityDefinition {
   }
 
   /**
+   * @return  VirtualField[]
+   */
+  protected function getVirtuals(): array {
+    return $this->virtuals;
+  }
+
+  /**
    * @return  array
    */
   public function toArray(): array {
@@ -295,7 +318,8 @@ class EntityDefinition {
       'has_many'   => $this->has_many,
       'has_many_through' => $this->has_many_through,
       'belongs_to' => $this->belongs_to,
-      'scopes'     => array_keys($this->scopes)
+      'scopes'     => array_keys($this->scopes),
+      'virtuals'   => $this->virtuals,
     ];
   }
 }

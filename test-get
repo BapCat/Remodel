@@ -13,11 +13,17 @@ use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 use BapCat\CoolThing\UserNotFoundException;
 
+/**
+ * @var  UserRepository  $repo
+ */
+
 echo "New user\n";
 $user = User::create(new Email('corey@narwhunderful.com'), new Password('password'));
 echo $user;
 echo "\n";
 echo json_encode($user);
+echo "\n";
+echo $user->a;
 echo "\n\n";
 
 echo "Basic get\n";
