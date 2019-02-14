@@ -73,28 +73,23 @@ use JsonSerializable;
  *
 @each(array_merge([$id], $required, $optional) as $def)
 @if($def->read_only)
- * @property-read  \{! $def->type !}  ${! $def->alias !}
-
+ * @property-read  \{! $def->type !}  ${! $def->alias !}  (read only)
 @else
  * @property  \{! $def->type !}  ${! $def->alias !}
 
 @endif
 @endeach
 @each($has_many as $relation)
- * @property-read  \{! $relation->foreign_entity !}[]  ${! $relation->alias !}
-
+ * @property-read  \{! $relation->foreign_entity !}[]  ${! $relation->alias !}  (has many)
 @endeach
 @each($has_many_through as $relation)
- * @property-read  \{! $relation->entity_foreign !}[]  ${! $relation->alias !}
-
+ * @property-read  \{! $relation->entity_foreign !}[]  ${! $relation->alias !}  (has many through)
 @endeach
 @each($belongs_to as $relation)
- * @property-read  \{! $relation->foreign_entity !}[]  ${! $relation->alias !}
-
+ * @property-read  \{! $relation->foreign_entity !}[]  ${! $relation->alias !}  (belongs to)
 @endeach
 @each($virtuals as $virtual)
- * @property-read  \{! $virtual->type !}  ${! $virtual->alias !}
-
+ * @property-read  \{! $virtual->type !}  ${! $virtual->alias !}  (virtual field)
 @endeach
  */
 class {! $name !} implements Entity, JsonSerializable {
