@@ -1,0 +1,60 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1); namespace BapCat\Remodel;
+
+require __DIR__ . '/vendor/autoload.php';
+
+trait A {
+    public function smallTalk() {
+        echo 'a';
+    }
+    public function bigTalk() {
+        echo 'A';
+    }
+}
+
+trait B {
+    public function smallTalk() {
+        echo 'b';
+    }
+    public function bigTalk() {
+        echo 'B';
+    }
+}
+
+/*
+class Talker {
+    use A, B {
+        B::smallTalk insteadof A;
+        A::bigTalk insteadof B;
+    }
+}
+
+class Aliased_Talker {
+    use A, B {
+        B::smallTalk insteadof A;
+        A::bigTalk insteadof B;
+        B::bigTalk as talk;
+    }
+}
+*/
+
+$talker = new TraitDefinition();
+
+$talker->add(A::class, 'OtherA');
+$talker->add(B::class);
+
+$talker->use_method(B::class, 'smallTalk')->instead_of(OtherA::class);
+$talker->use_method(A::class, 'bigTalk')->instead_of(B::class);
+
+echo "// Talker\n\n{$talker->imports()}\nclass Talker {\n{$talker->use_statement()}\n}\n";
+
+$aliasedTalker = new TraitDefinition();
+$aliasedTalker->add(A::class);
+$aliasedTalker->add(B::class);
+$aliasedTalker->use_method(B::class, 'smallTalk')->instead_of(A::class);
+$aliasedTalker->use_method(A::class, 'bigTalk')->instead_of(B::class);
+$aliasedTalker->use_method(B::class, 'bigTalk')->as_alias('talk')->with_visibility('protected');
+
+echo "// Aliased_Talker\n\n{$aliasedTalker->imports()}\nclass Aliased_Talker {\n{$aliasedTalker->use_statement()}\n}\n";
+
+

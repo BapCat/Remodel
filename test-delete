@@ -11,4 +11,4 @@ use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 
 $user = $repo->first();
-var_dump($repo->withId($user->id)->delete());
+$user->delete();

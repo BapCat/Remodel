@@ -13,12 +13,20 @@ use BapCat\CoolThing\UserGateway;
 use BapCat\CoolThing\UserRepository;
 use BapCat\CoolThing\UserNotFoundException;
 
+/**
+ * @var  UserRepository  $repo
+ */
+
+echo "New user\n";
 $user = User::create(new Email('corey@narwhunderful.com'), new Password('password'));
 echo $user;
-echo "\n\n";
+echo "\n";
 echo json_encode($user);
+echo "\n";
+echo $user->a;
 echo "\n\n";
 
+echo "Basic get\n";
 echo json_encode($gate->query()
   ->select('id', 'email', 'password', 'butt', 'created_at', 'updated_at')
   ->get()
@@ -26,10 +34,17 @@ echo json_encode($gate->query()
 
 echo "\n\n";
 
+echo "Order by email\n";
 echo json_encode($repo->orderByEmail()->get());
 
 echo "\n\n";
 
+echo "Scope get\n";
+echo json_encode($repo->corey()->get());
+
+echo "\n\n";
+
+echo "Exception (first -> not found)\n";
 try {
   $repo->withEmail(new Email('i@dont.exist'))->first();
 } catch(UserNotFoundException $ex) {

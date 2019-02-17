@@ -23,4 +23,7 @@ foreach($user_devices as $user_device) {
   echo json_encode($device->users), "\n";
 }
 
-echo json_encode($user->devices), "\n";
+echo "User devices: ", json_encode($user->devices), "\n";
+
+$user->cacheRelations();
+echo "User encoded with relations: ", json_encode($user), "\n";
