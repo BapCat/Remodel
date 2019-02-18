@@ -80,21 +80,23 @@ class TraitDefinition {
   /**
    * Return a string containing the use statements for use within a class definition.
    *
+   * @param string $indent Indentation to use; Default: two spaces
+   *
    * @return string
    */
-  public function use_statement(): string {
+  public function use_statement(string $indent = '  '): string {
     
-    $full = '  use ' . implode(', ', $this->names);
+    $full = $indent . 'use ' . implode(', ', $this->names);
     
     if ( $this->overrides ) {
       
-      $full .= " { \n";
+      $full .= $indent . "{ \n";
       
       foreach ( $this->overrides as $override ) {
-        $full .= "    {$override};\n";
+        $full .= $indent . $indent . "{$override};\n";
       }
       
-      $full .= "  }\n";
+      $full .= $indent . "}\n";
     } else {
       $full .= ';';
     }

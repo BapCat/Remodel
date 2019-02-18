@@ -11,12 +11,12 @@
  * @var  EntityDefinitionOptions[]  $optional
  * @var  string[]                   $scopes
  * @var  VirtualField[]             $virtuals
- * @var  TraitDefinition            $traits
+ * @var  TraitDefinition|null       $traits
  */
 
 use BapCat\Remodel\EntityDefinitionOptions;
-use BapCat\Remodel\TraitDefinition;
 use BapCat\Remodel\VirtualField;
+use BapCat\Remodel\TraitDefinition;
 
 if(!function_exists('defToParam')) {
   /**

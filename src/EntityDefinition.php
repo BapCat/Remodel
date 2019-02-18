@@ -37,7 +37,7 @@ class EntityDefinition {
   /** @var  string  $namespace */
   private $namespace;
 
-  /** @var TraitDefinition $traits */
+  /** @var TraitDefinition|null $traits */
   private $traits;
 
   /** @var  string  $table */
@@ -191,11 +191,17 @@ class EntityDefinition {
     return $this->many_to_many[] = new ManyToMany($alias_join, $alias_left, $this->full_name, $entity_left, $alias_right, $entity_right);
   }
   
-  
-  public function traits(TraitDefinition $traits) {
+  /**
+   * Specify Traits to add to this `Entity`; For more information: {@see TraitDefinition}
+   *
+   * @param TraitDefinition $traits
+   *
+   * @return void
+   */
+  public function traits(TraitDefinition $traits): void {
     $this->traits = $traits;
   }
-  
+
   /**
    * Adds a scope to to the `Repository`.  The `callable` will be executed whenever
    * the scope is used, and passed the GatewayQuery object.  It may append to the
@@ -220,7 +226,6 @@ class EntityDefinition {
    */
   public function virtual(string $name, string $type, callable $callback): void {
     $this->virtuals[$name] = new VirtualField($name, $type, $callback);
-
   }
 
   /**
@@ -244,8 +249,8 @@ class EntityDefinition {
     return $this->namespace;
   }
   
-  /** @return TraitDefinition */
-  protected function getTraits(): TraitDefinition {
+  /** @return TraitDefinition|null */
+  protected function getTraits(): ?TraitDefinition {
     return $this->traits;
   }
   
