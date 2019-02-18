@@ -1,60 +1,78 @@
 #!/usr/bin/env php
-<?php declare(strict_types=1); namespace BapCat\Remodel;
+<?php
 
 require __DIR__ . '/vendor/autoload.php';
 
-trait A {
-    public function smallTalk() {
-        echo 'a';
-    }
-    public function bigTalk() {
-        echo 'A';
-    }
+use BapCat\Phi\Phi;
+use BapCat\Persist\Drivers\Local\LocalDriver;
+use BapCat\Remodel\RemodelConnection;
+use Illuminate\Database\Grammar;
+use Illuminate\Database\Processors\Processor;
+use Illuminate\Database\Query\Grammars\MySqlGrammar;
+use Illuminate\Database\Query\Processors\MySqlProcessor;
+//use Illuminate\Database\MySqlConnection;
+use Illuminate\Database\ConnectionInterface;
+
+use BapCat\Remodel\TraitDefinition;
+use BapCat\Remodel\RemodelExampleTrait;
+
+$ioc = Phi::instance();
+
+// Grab filesystem directories
+$persist = new LocalDriver(__DIR__);
+$cache   = $persist->getDirectory('/cache');
+
+$pdo = new PDO('mysql:host=localhost;dbname=remodel', 'remodel', 'remodel');
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+
+$ioc->bind(ConnectionInterface::class, new RemodelConnection($pdo, new MySqlGrammar(), new MySqlProcessor()));
+
+use BapCat\Values\Email;
+use BapCat\Values\Password;
+use BapCat\Values\Text;
+
+use BapCat\Remodel\Registry;
+use BapCat\Remodel\EntityDefinition;
+use BapCat\CoolThing\User;
+
+$registry = $ioc->make(Registry::class, [$cache]);
+
+$def = new EntityDefinition(User::class);
+$def->required('email', Email::class);
+$def->required('password', Password::class);
+
+require __DIR__ . '/test-trait-init.php';
+
+use BapCat\CoolThing\A;
+use BapCat\CoolThing\B;
+
+$traits = new TraitDefinition();
+$traits->add(A::class);
+$traits->add(B::class);
+$traits->use_method(B::class, 'smallTalk')->instead_of(A::class);
+$traits->use_method(A::class, 'bigTalk')->instead_of(B::class);
+$traits->use_method(A::class, 'bigTalk')->as_alias('bigTalkA')->with_visibility('public');
+$traits->use_method(B::class, 'bigTalk')->as_alias('bigTalkB')->with_visibility('public');
+$def->traits($traits);
+
+$registry->register($def);
+
+$user = User::create(new Email('corey+inserttest@narwhunderful.com'), new Password('password'));
+
+if ( $user->smallTalk() !== 'b' ) {
+    die("User::smallTalk() did not return 'b'");
 }
 
-trait B {
-    public function smallTalk() {
-        echo 'b';
-    }
-    public function bigTalk() {
-        echo 'B';
-    }
+if ( $user->bigTalk() !== 'A' ) {
+  die("User::bigTalk() did not return 'A'");
 }
 
-/*
-class Talker {
-    use A, B {
-        B::smallTalk insteadof A;
-        A::bigTalk insteadof B;
-    }
+if ( $user->bigTalkA() !== 'A' ) {
+  die("User::bigTalkA() did not return 'A'");
 }
 
-class Aliased_Talker {
-    use A, B {
-        B::smallTalk insteadof A;
-        A::bigTalk insteadof B;
-        B::bigTalk as talk;
-    }
+if ( $user->bigTalkB() !== 'B' ) {
+  die("User::bigTalkB() did not return 'B'");
 }
-*/
-
-$talker = new TraitDefinition();
-
-$talker->add(A::class, 'OtherA');
-$talker->add(B::class);
-
-$talker->use_method(B::class, 'smallTalk')->instead_of(OtherA::class);
-$talker->use_method(A::class, 'bigTalk')->instead_of(B::class);
-
-echo "// Talker\n\n{$talker->imports()}\nclass Talker {\n{$talker->use_statement()}\n}\n";
-
-$aliasedTalker = new TraitDefinition();
-$aliasedTalker->add(A::class);
-$aliasedTalker->add(B::class);
-$aliasedTalker->use_method(B::class, 'smallTalk')->instead_of(A::class);
-$aliasedTalker->use_method(A::class, 'bigTalk')->instead_of(B::class);
-$aliasedTalker->use_method(B::class, 'bigTalk')->as_alias('talk')->with_visibility('protected');
-
-echo "// Aliased_Talker\n\n{$aliasedTalker->imports()}\nclass Aliased_Talker {\n{$aliasedTalker->use_statement()}\n}\n";
-
-

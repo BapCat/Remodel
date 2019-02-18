@@ -11,9 +11,11 @@
  * @var  EntityDefinitionOptions[]  $optional
  * @var  string[]                   $scopes
  * @var  VirtualField[]             $virtuals
+ * @var  TraitDefinition            $traits
  */
 
 use BapCat\Remodel\EntityDefinitionOptions;
+use BapCat\Remodel\TraitDefinition;
 use BapCat\Remodel\VirtualField;
 
 if(!function_exists('defToParam')) {
@@ -69,7 +71,7 @@ use BapCat\Remodel\Entity;
 use JsonSerializable;
 
 @if(isset($traits))
-\{! $traits->imports !};
+{! $traits->imports() !}
 @endif
 
 /**
@@ -99,7 +101,7 @@ use JsonSerializable;
 class {! $name !} implements Entity, JsonSerializable {
   use PropifierTrait;
 @if(isset($traits))
-  \{! $traits->use_statement !};
+{! $traits->use_statement() !}
 @endif
 
   public const ID_NAME = '{! $id->alias !}';
