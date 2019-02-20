@@ -8,7 +8,6 @@ use BapCat\Values\Text;
 use BapCat\Values\Timestamp;
 
 use Illuminate\Database\Schema\Blueprint;
-use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 
 class GatewayQueryTest extends TestCase {
@@ -108,28 +107,9 @@ class GatewayQueryTest extends TestCase {
     $this->assertSame('test+name@bapcat.com', $user[0]['email']);
   }
 
-  public function testGetIntIsInt(): void {
-    $user = $this->query->first();
-
-    $this->assertThat(
-      $user['id'],
-      new IsType(IsType::TYPE_INT)
-    );
-  }
-
-  public function testGetTimestampIsInt(): void {
-    $user = $this->query->first();
-
-    $this->assertThat(
-      $user['created_at'],
-      new IsType(IsType::TYPE_INT)
-    );
-  }
-
   public function testSelectGet(): void {
     $user = $this->query->select('name')->first();
 
-    $this->assertCount(1, $user);
     $this->assertSame('I Have a Name', $user['name']);
   }
 

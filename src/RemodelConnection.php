@@ -83,12 +83,16 @@ class RemodelConnection extends Connection {
       foreach($row as $col => &$value) {
         if($value !== null) {
           switch($types[$col]) {
+            case 'longlong':
             case 'long':
             case 'integer':
+            case 'short':
+            case 'tiny':
               $value = (int)$value;
             break;
 
             case 'double':
+            case 'float':
               $value = (float)$value;
             break;
 
