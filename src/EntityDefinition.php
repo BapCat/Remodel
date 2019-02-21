@@ -13,7 +13,7 @@ use BapCat\Values\Timestamp;
  * @property-read  string  $full_name
  * @property-read  string  $name
  * @property-read  string  $namespace
- * @property-read  TraitDefinition $traits
+ * @property-read  TraitDefinition|null $traits
  * @property-read  string  $table
  * @property-read  EntityDefinitionOptions  $id
  * @property-read  EntityDefinitionOptions[]  $required
